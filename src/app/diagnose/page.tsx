@@ -9,6 +9,10 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { Suspense } from "react";
 
+// Fully dynamic: this page always needs a logged-in user, and the streaming
+// shell never resolves in the browser when prerendered (Next 16 PPR quirk).
+export const dynamic = "force-dynamic";
+
 export default function DiagnosisHistoryPage() {
   return (
     <Suspense fallback={<DiagnosisHistoryLoading />}>

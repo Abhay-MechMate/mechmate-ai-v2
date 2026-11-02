@@ -9,6 +9,9 @@ import { Suspense } from "react";
 
 export const maxDuration = 60;
 
+// Fully dynamic: always needs a logged-in user (see diagnose/page.tsx note).
+export const dynamic = "force-dynamic";
+
 type NewDiagnosisPageProps = {
   searchParams: Promise<{ vehicle?: string | string[] }>;
 };

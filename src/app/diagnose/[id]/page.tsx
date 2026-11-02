@@ -13,6 +13,9 @@ import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { Suspense } from "react";
 
+// Fully dynamic: always needs a logged-in user (see diagnose/page.tsx note).
+export const dynamic = "force-dynamic";
+
 type DiagnosisReportPageProps = {
   params: Promise<{ id: string }>;
 };
