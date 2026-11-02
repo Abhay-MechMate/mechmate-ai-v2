@@ -2,7 +2,6 @@ import { deleteVehicleAction } from "@/app/garage/actions";
 import { createClient } from "@/lib/supabase/server";
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { Suspense } from "react";
 
 type GaragePageProps = {
   searchParams: Promise<{
@@ -22,15 +21,8 @@ type Vehicle = {
   mileage: number | null;
 };
 
-export default function GaragePage({ searchParams }: GaragePageProps) {
-  return (
-    <Suspense fallback={<GarageLoading />}>
-      <GarageContent searchParams={searchParams} />
-    </Suspense>
-  );
-}
-
-async function GarageContent({ searchParams }: GaragePageProps) {
+// No page-level <Suspense> (see diagnose/page.tsx note).
+export default async function GaragePage({ searchParams }: GaragePageProps) {
   const supabase = await createClient();
   const {
     data: { user },
@@ -182,14 +174,6 @@ async function GarageContent({ searchParams }: GaragePageProps) {
           })}
         </section>
       </div>
-    </main>
-  );
-}
-
-function GarageLoading() {
-  return (
-    <main className="flex min-h-screen items-center justify-center bg-zinc-950 text-zinc-400">
-      Loading your garage…
     </main>
   );
 }

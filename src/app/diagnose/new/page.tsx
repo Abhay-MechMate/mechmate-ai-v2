@@ -3,10 +3,8 @@ import {
   type DiagnosisVehicleOption,
 } from "@/app/diagnose/new/diagnosis-form";
 import { createClient } from "@/lib/supabase/server";
-import { connection } from "next/server";
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { Suspense } from "react";
 
 export const maxDuration = 60;
 
@@ -22,17 +20,10 @@ type VehicleRow = {
   model: string;
 };
 
-export default function NewDiagnosisPage(props: NewDiagnosisPageProps) {
-  return (
-    <Suspense fallback={<NewDiagnosisLoading />}>
-      <NewDiagnosisContent {...props} />
-    </Suspense>
-  );
-}
-
-async function NewDiagnosisContent({ searchParams }: NewDiagnosisPageProps) {
-  // Always render per request (see diagnose/page.tsx note).
-  await connection();
+// No page-level <Suspense> (see diagnose/page.tsx note).
+export default async function NewDiagnosisPage({
+  searchParams,
+}: NewDiagnosisPageProps) {
   const supabase = await createClient();
   const {
     data: { user },
@@ -109,14 +100,6 @@ async function NewDiagnosisContent({ searchParams }: NewDiagnosisPageProps) {
           )}
         </section>
       </div>
-    </main>
-  );
-}
-
-function NewDiagnosisLoading() {
-  return (
-    <main className="flex min-h-screen items-center justify-center bg-zinc-950 text-zinc-400">
-      Loading your garage…
     </main>
   );
 }

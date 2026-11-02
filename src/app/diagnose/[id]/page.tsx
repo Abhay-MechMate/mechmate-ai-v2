@@ -9,26 +9,17 @@ import {
   vehicleLabel,
 } from "@/app/diagnose/display";
 import { createClient } from "@/lib/supabase/server";
-import { connection } from "next/server";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
-import { Suspense } from "react";
 
 type DiagnosisReportPageProps = {
   params: Promise<{ id: string }>;
 };
 
-export default function DiagnosisReportPage(props: DiagnosisReportPageProps) {
-  return (
-    <Suspense fallback={<DiagnosisReportLoading />}>
-      <DiagnosisReportContent {...props} />
-    </Suspense>
-  );
-}
-
-async function DiagnosisReportContent({ params }: DiagnosisReportPageProps) {
-  // Always render per request (see diagnose/page.tsx note).
-  await connection();
+// No page-level <Suspense> (see diagnose/page.tsx note).
+export default async function DiagnosisReportPage({
+  params,
+}: DiagnosisReportPageProps) {
   const supabase = await createClient();
   const {
     data: { user },
@@ -268,14 +259,6 @@ async function DiagnosisReportContent({ params }: DiagnosisReportPageProps) {
           </Link>
         </footer>
       </div>
-    </main>
-  );
-}
-
-function DiagnosisReportLoading() {
-  return (
-    <main className="flex min-h-screen items-center justify-center bg-zinc-950 text-zinc-400">
-      Loading diagnosis…
     </main>
   );
 }

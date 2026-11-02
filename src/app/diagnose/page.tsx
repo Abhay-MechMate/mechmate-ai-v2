@@ -6,22 +6,13 @@ import {
 import { listSessions } from "@/app/diagnose/data";
 import { createClient } from "@/lib/supabase/server";
 import Link from "next/link";
-import { connection } from "next/server";
 import { redirect } from "next/navigation";
-import { Suspense } from "react";
 
-export default function DiagnosisHistoryPage() {
-  return (
-    <Suspense fallback={<DiagnosisHistoryLoading />}>
-      <DiagnosisHistoryContent />
-    </Suspense>
-  );
-}
-
-async function DiagnosisHistoryContent() {
-  // Always render per request: this page needs a logged-in user, and the
-  // prerendered streaming shell never resolves in the browser (Next 16 PPR quirk).
-  await connection();
+// Deliberately no page-level <Suspense>: a streamed boundary is revealed by
+// React's inline script on requestAnimationFrame, which browsers never fire in
+// hidden/background tabs, leaving the fallback up indefinitely. Rendering the
+// whole page in the initial HTML avoids that and lets redirect() send a real 307.
+export default async function DiagnosisHistoryPage() {
   const supabase = await createClient();
   const {
     data: { user },
@@ -147,14 +138,6 @@ async function DiagnosisHistoryContent() {
           </section>
         )}
       </div>
-    </main>
-  );
-}
-
-function DiagnosisHistoryLoading() {
-  return (
-    <main className="flex min-h-screen items-center justify-center bg-zinc-950 text-zinc-400">
-      Loading diagnoses…
     </main>
   );
 }
