@@ -22,7 +22,7 @@ export async function signUpAction(formData: FormData) {
     redirect(`/signup?error=${encodeURIComponent(error.message)}`);
   }
 
-  redirect("/");
+  redirect("/garage");
 }
 
 export async function signInAction(formData: FormData) {
@@ -39,5 +39,5 @@ export async function signInAction(formData: FormData) {
     redirect(`/signin?error=${encodeURIComponent(error.message)}`);
   }
 
-  redirect("/");
+  redirect("/garage");
 }
