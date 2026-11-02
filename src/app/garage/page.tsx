@@ -68,14 +68,22 @@ async function GarageContent({ searchParams }: GaragePageProps) {
               Keep your vehicles ready for faster, more accurate diagnoses.
             </p>
           </div>
-          <form action="/auth/signout" method="post">
-            <button
-              type="submit"
+          <div className="flex items-center gap-3">
+            <Link
+              href="/diagnose"
               className="rounded-lg border border-zinc-700 px-4 py-2 text-sm font-medium text-zinc-300 transition-colors hover:border-zinc-600 hover:bg-zinc-900 hover:text-white"
             >
-              Sign out
-            </button>
-          </form>
+              Diagnoses
+            </Link>
+            <form action="/auth/signout" method="post">
+              <button
+                type="submit"
+                className="rounded-lg border border-zinc-700 px-4 py-2 text-sm font-medium text-zinc-300 transition-colors hover:border-zinc-600 hover:bg-zinc-900 hover:text-white"
+              >
+                Sign out
+              </button>
+            </form>
+          </div>
         </header>
 
         {actionError || vehiclesError ? (
@@ -152,15 +160,23 @@ async function GarageContent({ searchParams }: GaragePageProps) {
                   ) : null}
                 </dl>
 
-                <form action={deleteVehicleAction} className="mt-auto pt-6">
-                  <input type="hidden" name="id" value={vehicle.id} />
-                  <button
-                    type="submit"
-                    className="text-sm font-medium text-zinc-500 transition-colors hover:text-red-400"
+                <div className="mt-auto flex items-center justify-between pt-6">
+                  <Link
+                    href={`/diagnose/new?vehicle=${vehicle.id}`}
+                    className="text-sm font-medium text-emerald-400 transition-colors hover:text-emerald-300"
                   >
-                    Delete
-                  </button>
-                </form>
+                    Diagnose
+                  </Link>
+                  <form action={deleteVehicleAction}>
+                    <input type="hidden" name="id" value={vehicle.id} />
+                    <button
+                      type="submit"
+                      className="text-sm font-medium text-zinc-500 transition-colors hover:text-red-400"
+                    >
+                      Delete
+                    </button>
+                  </form>
+                </div>
               </article>
             );
           })}
