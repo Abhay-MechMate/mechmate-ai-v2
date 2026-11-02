@@ -9,12 +9,10 @@ import {
   vehicleLabel,
 } from "@/app/diagnose/display";
 import { createClient } from "@/lib/supabase/server";
+import { connection } from "next/server";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { Suspense } from "react";
-
-// Fully dynamic: always needs a logged-in user (see diagnose/page.tsx note).
-export const dynamic = "force-dynamic";
 
 type DiagnosisReportPageProps = {
   params: Promise<{ id: string }>;
@@ -29,6 +27,8 @@ export default function DiagnosisReportPage(props: DiagnosisReportPageProps) {
 }
 
 async function DiagnosisReportContent({ params }: DiagnosisReportPageProps) {
+  // Always render per request (see diagnose/page.tsx note).
+  await connection();
   const supabase = await createClient();
   const {
     data: { user },

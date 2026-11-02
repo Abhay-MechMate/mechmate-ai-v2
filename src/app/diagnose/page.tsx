@@ -6,12 +6,9 @@ import {
 import { listSessions } from "@/app/diagnose/data";
 import { createClient } from "@/lib/supabase/server";
 import Link from "next/link";
+import { connection } from "next/server";
 import { redirect } from "next/navigation";
 import { Suspense } from "react";
-
-// Fully dynamic: this page always needs a logged-in user, and the streaming
-// shell never resolves in the browser when prerendered (Next 16 PPR quirk).
-export const dynamic = "force-dynamic";
 
 export default function DiagnosisHistoryPage() {
   return (
@@ -22,6 +19,9 @@ export default function DiagnosisHistoryPage() {
 }
 
 async function DiagnosisHistoryContent() {
+  // Always render per request: this page needs a logged-in user, and the
+  // prerendered streaming shell never resolves in the browser (Next 16 PPR quirk).
+  await connection();
   const supabase = await createClient();
   const {
     data: { user },

@@ -3,14 +3,12 @@ import {
   type DiagnosisVehicleOption,
 } from "@/app/diagnose/new/diagnosis-form";
 import { createClient } from "@/lib/supabase/server";
+import { connection } from "next/server";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { Suspense } from "react";
 
 export const maxDuration = 60;
-
-// Fully dynamic: always needs a logged-in user (see diagnose/page.tsx note).
-export const dynamic = "force-dynamic";
 
 type NewDiagnosisPageProps = {
   searchParams: Promise<{ vehicle?: string | string[] }>;
@@ -33,6 +31,8 @@ export default function NewDiagnosisPage(props: NewDiagnosisPageProps) {
 }
 
 async function NewDiagnosisContent({ searchParams }: NewDiagnosisPageProps) {
+  // Always render per request (see diagnose/page.tsx note).
+  await connection();
   const supabase = await createClient();
   const {
     data: { user },
