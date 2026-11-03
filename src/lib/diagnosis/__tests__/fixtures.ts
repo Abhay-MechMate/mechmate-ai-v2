@@ -46,5 +46,5 @@ export function validModelOutput(): DiagnosisModelOutput {
 }
 
 export function validResult(): DiagnosisResult {
-  return { schemaVersion: 1, ...validModelOutput() };
+  return { schemaVersion: 2, round: 0, ruledOut: [], ...validModelOutput() };
 }

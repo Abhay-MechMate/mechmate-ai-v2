@@ -158,6 +158,7 @@ export function parseDiagnosisOutput(
 
   return {
     schemaVersion: DIAGNOSIS_SCHEMA_VERSION,
+    round: 0,
     summary: summary.slice(0, 800),
     drivability: {
       level: drivability.level,
@@ -167,6 +168,7 @@ export function parseDiagnosisOutput(
     safetyCritical,
     seeMechanic: { recommended, reason },
     likelyCauses: likelyCauses.slice(0, 5),
+    ruledOut: [],
     inspectionSteps: inspectionSteps.slice(0, 6),
     toolsNeeded: dedupeCaseInsensitive(value.toolsNeeded.map((item) => item.trim())).slice(0, 8),
     codeNotes,

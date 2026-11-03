@@ -5,6 +5,7 @@ import {
   STEP_DIFFICULTIES,
   VEHICLE_SYSTEMS,
   type DiagnosisInput,
+  type DiagnosisResult,
   type VehicleSnapshot,
 } from "./types";
 
@@ -145,6 +146,10 @@ export const DIAGNOSIS_JSON_SCHEMA = {
   },
 } as const;
 
+export function neutralizeDelimiters(value: string): string {
+  return value.replaceAll("<<<", "<<").replaceAll(">>>", ">>");
+}
+
 export function buildUserPrompt(input: DiagnosisInput, vehicle: VehicleSnapshot): string {
   const referenceData = input.dtcCodes
     .filter((code) => code in DTC_KNOWLEDGE)
@@ -158,7 +163,7 @@ export function buildUserPrompt(input: DiagnosisInput, vehicle: VehicleSnapshot)
         causes: entry.causes.map((cause) => cause.title),
       };
     });
-  const safeSymptoms = input.symptoms?.replaceAll("<<<", "<<").replaceAll(">>>", ">>");
+  const safeSymptoms = input.symptoms ? neutralizeDelimiters(input.symptoms) : null;
 
   return `VEHICLE
 Year: ${vehicle.modelYear ?? "unknown"} | Make: ${vehicle.make} | Model: ${vehicle.model} | Trim: ${vehicle.trimName ?? "unknown"} | Engine: ${vehicle.engine ?? "unknown"} | Mileage: ${vehicle.mileage === null ? "unknown" : `${vehicle.mileage.toLocaleString("en-US")} mi`}
@@ -180,9 +185,32 @@ export type ChatMessage = {
   content: string;
 };
 
-export function buildMessages(input: DiagnosisInput, vehicle: VehicleSnapshot): ChatMessage[] {
-  return [
-    { role: "system", content: SYSTEM_PROMPT },
+export type FollowUpMessages = {
+  system: string;
+  current: DiagnosisResult;
+  prompt: string;
+};
+
+export function serializeCurrentDiagnosis(result: DiagnosisResult): string {
+  const current: Partial<DiagnosisResult> = { ...result };
+  delete current.schemaVersion;
+  delete current.round;
+  return JSON.stringify(current);
+}
+
+export function buildMessages(
+  input: DiagnosisInput,
+  vehicle: VehicleSnapshot,
+  followUp?: FollowUpMessages,
+): ChatMessage[] {
+  const base: ChatMessage[] = [
+    { role: "system", content: followUp?.system ?? SYSTEM_PROMPT },
     { role: "user", content: buildUserPrompt(input, vehicle) },
+  ];
+  if (!followUp) return base;
+  return [
+    ...base,
+    { role: "assistant", content: serializeCurrentDiagnosis(followUp.current) },
+    { role: "user", content: followUp.prompt },
   ];
 }

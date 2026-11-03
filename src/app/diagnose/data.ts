@@ -8,6 +8,7 @@ import type {
   DiagnosticSessionSummary,
   VehicleSnapshot,
 } from "@/lib/diagnosis/types";
+import { normalizeResult } from "@/lib/diagnosis/upgrade";
 
 type SupabaseClient = Awaited<ReturnType<typeof createClient>>;
 
@@ -116,6 +117,7 @@ type SessionSummaryRow = {
   created_at: string;
   drivability: DiagnosticSessionSummary["drivabilityLevel"];
   top_cause: string | null;
+  refined_round: number | string | null;
 };
 
 export async function listSessions(
@@ -125,7 +127,7 @@ export async function listSessions(
   const { data, error } = await supabase
     .from("diagnostic_sessions")
     .select(
-      "id, vehicle_snapshot, dtc_codes, symptoms, result_source, created_at, drivability:result->drivability->>level, top_cause:result->likelyCauses->0->>title",
+      "id, vehicle_snapshot, dtc_codes, symptoms, result_source, created_at, drivability:result->drivability->>level, top_cause:result->likelyCauses->0->>title, refined_round:result->>round",
     )
     .order("created_at", { ascending: false })
     .limit(limit);
@@ -140,6 +142,7 @@ export async function listSessions(
     drivabilityLevel: row.drivability,
     topCause: row.top_cause,
     resultSource: row.result_source,
+    refinedRound: Number(row.refined_round ?? 0),
     createdAt: row.created_at,
   }));
 }
@@ -151,6 +154,9 @@ type SessionRow = {
   dtc_codes: string[];
   symptoms: string | null;
   result: DiagnosticSession["result"];
+  initial_result: unknown;
+  revision: number;
+  assistant_status: DiagnosticSession["assistantStatus"];
   result_source: DiagnosticSession["resultSource"];
   model: string | null;
   fallback_reason: DiagnosticSession["fallbackReason"];
@@ -166,7 +172,7 @@ export async function getSession(
   const { data, error } = await supabase
     .from("diagnostic_sessions")
     .select(
-      "id, vehicle_id, vehicle_snapshot, dtc_codes, symptoms, result, result_source, model, fallback_reason, created_at",
+      "id, vehicle_id, vehicle_snapshot, dtc_codes, symptoms, result, initial_result, revision, assistant_status, result_source, model, fallback_reason, created_at",
     )
     .eq("id", id)
     .maybeSingle();
@@ -180,7 +186,10 @@ export async function getSession(
     vehicleSnapshot: row.vehicle_snapshot,
     dtcCodes: row.dtc_codes,
     symptoms: row.symptoms,
-    result: row.result,
+    result: normalizeResult(row.result),
+    initialResult: normalizeResult(row.initial_result),
+    revision: row.revision,
+    assistantStatus: row.assistant_status,
     resultSource: row.result_source,
     model: row.model,
     fallbackReason: row.fallback_reason,

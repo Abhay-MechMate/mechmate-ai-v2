@@ -1,15 +1,18 @@
-import path from "node:path";
-import { defineConfig } from "vitest/config";
+const localPath = (relative: string) =>
+  decodeURIComponent(new URL(relative, import.meta.url).pathname).replace(/^\/([A-Z]:)/, "$1");
 
-export default defineConfig({
+const config = {
   test: {
     environment: "node",
     include: ["src/**/*.test.ts"],
+    pool: "threads",
   },
   resolve: {
     alias: {
-      "@": path.resolve(__dirname, "src"),
-      "server-only": path.resolve(__dirname, "src/lib/test/server-only-stub.ts"),
+      "@": localPath("./src"),
+      "server-only": localPath("./src/lib/test/server-only-stub.ts"),
     },
   },
-});
+};
+
+export default config;

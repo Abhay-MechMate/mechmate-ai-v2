@@ -1,6 +1,11 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { diagnoseWithAi, DEFAULT_BACKUP_MODEL } from "../openrouter";
-import { validModelOutput, vehicle } from "./fixtures";
+import {
+  askQuestionsWithAi,
+  diagnoseWithAi,
+  DEFAULT_BACKUP_MODEL,
+  rediagnoseWithAi,
+} from "../openrouter";
+import { validModelOutput, validResult, vehicle } from "./fixtures";
 
 const input = { dtcCodes: ["P0420"], symptoms: null };
 
@@ -102,5 +107,81 @@ describe("OpenRouter client", () => {
       ok: false,
       reason: "timeout",
     });
+  });
+
+  it("requests and validates assistant questions with the bounded schema", async () => {
+    process.env.OPENROUTER_API_KEY = "test-key";
+    const questions = {
+      intro: "Two readings will split the causes:",
+      canNarrowFurther: true,
+      stopReason: null,
+      questions: [1, 2].map((index) => ({
+        kind: "single_choice",
+        prompt: `What does sensor ${index} show?`,
+        why: "This separates the converter from the sensor.",
+        options: ["Steady", "Switching"],
+        requires: "scan_tool",
+        targets: ["Aging catalytic converter"],
+      })),
+    };
+    const fetchMock = vi.fn().mockResolvedValue(jsonResponse({
+      model: "test/model",
+      choices: [{ finish_reason: "stop", message: { content: JSON.stringify(questions) } }],
+      usage: {},
+    }));
+    vi.stubGlobal("fetch", fetchMock);
+    const result = await askQuestionsWithAi({
+      input,
+      vehicle,
+      baseline: validResult(),
+      round: 1,
+      checkReports: [],
+      history: [],
+    });
+    expect(result.ok).toBe(true);
+    const body = JSON.parse((fetchMock.mock.calls[0][1] as RequestInit).body as string);
+    expect(body.response_format.json_schema.name).toBe("assistant_questions");
+    expect(body.max_tokens).toBe(800);
+  });
+
+  it("retries an invalid rediagnosis with the backup model", async () => {
+    vi.useFakeTimers();
+    process.env.OPENROUTER_API_KEY = "test-key";
+    const updated = {
+      ...validModelOutput(),
+      ruledOut: [],
+      changes: { headline: "The ranking stayed the same.", reasons: [] },
+      noteReply: null,
+      assistantState: "keep_going",
+    };
+    const fetchMock = vi.fn()
+      .mockResolvedValueOnce(jsonResponse({ choices: [{ finish_reason: "stop", message: { content: "bad" } }] }))
+      .mockResolvedValueOnce(jsonResponse({
+        model: "backup/model",
+        choices: [{ finish_reason: "stop", message: { content: JSON.stringify(updated) } }],
+        usage: {},
+      }));
+    vi.stubGlobal("fetch", fetchMock);
+    const question = {
+      id: "r1q1", kind: "short_text" as const, prompt: "What did you see?", why: "It helps.",
+      options: [], requires: "nothing" as const, targets: ["Aging catalytic converter"],
+    };
+    const result = await advanceRetry(rediagnoseWithAi({
+      input,
+      vehicle,
+      baseline: validResult(),
+      round: 1,
+      checkReports: [],
+      history: [],
+    }, {
+      questions: [question],
+      answers: [{ questionId: question.id, choice: null, text: "Steady" }],
+      note: null,
+      extraCodes: [],
+    }));
+    expect(result.ok).toBe(true);
+    const body = JSON.parse((fetchMock.mock.calls[1][1] as RequestInit).body as string);
+    expect(body.model).toBe(DEFAULT_BACKUP_MODEL);
+    expect(body.max_tokens).toBe(2400);
   });
 });

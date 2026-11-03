@@ -1,4 +1,4 @@
-export const DIAGNOSIS_SCHEMA_VERSION = 1 as const;
+export const DIAGNOSIS_SCHEMA_VERSION = 2 as const;
 
 export const DRIVABILITY_LEVELS = [
   "ok_to_drive",
@@ -49,8 +49,14 @@ export type CodeNote = {
   manufacturerSpecific: boolean;
 };
 
+export type RuledOutCause = {
+  title: string;
+  reason: string;
+};
+
 export type DiagnosisResult = {
   schemaVersion: typeof DIAGNOSIS_SCHEMA_VERSION;
+  round: number;
   summary: string;
   drivability: {
     level: DrivabilityLevel;
@@ -60,12 +66,23 @@ export type DiagnosisResult = {
   safetyCritical: boolean;
   seeMechanic: { recommended: boolean; reason: string | null };
   likelyCauses: LikelyCause[];
+  ruledOut: RuledOutCause[];
   inspectionSteps: InspectionStep[];
   toolsNeeded: string[];
   codeNotes: CodeNote[];
 };
 
-export type DiagnosisModelOutput = Omit<DiagnosisResult, "schemaVersion">;
+export type DiagnosisModelOutput = Omit<
+  DiagnosisResult,
+  "schemaVersion" | "round" | "ruledOut"
+>;
+
+export type DiagnosisResultV1 = Omit<
+  DiagnosisResult,
+  "schemaVersion" | "round" | "ruledOut"
+> & { schemaVersion: 1 };
+
+export type AssistantStatus = "not_started" | "active" | "finished";
 
 export type VehicleSnapshot = {
   nickname: string | null;
@@ -117,6 +134,9 @@ export type DiagnosticSession = {
   dtcCodes: string[];
   symptoms: string | null;
   result: DiagnosisResult;
+  initialResult: DiagnosisResult;
+  revision: number;
+  assistantStatus: AssistantStatus;
   resultSource: ResultSource;
   model: string | null;
   fallbackReason: FallbackReason | null;
@@ -131,5 +151,6 @@ export type DiagnosticSessionSummary = {
   drivabilityLevel: DrivabilityLevel | null;
   topCause: string | null;
   resultSource: ResultSource;
+  refinedRound: number;
   createdAt: string;
 };

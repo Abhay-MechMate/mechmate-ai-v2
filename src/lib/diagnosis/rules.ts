@@ -10,6 +10,14 @@ import {
   type VehicleSnapshot,
 } from "./types";
 import type { SymptomRule } from "./dtc-knowledge";
+import type { FloorReport } from "./assistant-types";
+
+export const HANDS_ON_PATTERN =
+  /\b(remove|disconnect|unplug|unbolt|disassemble|bleed|jack up|pull (the|off))\b/i;
+export const NEGATIVE_CHOICE =
+  /^\s*(no|not|none|never|nothing|didn't|doesn't|isn't|wasn't)\b/i;
+const DRIVING_STEP_PATTERN =
+  /\b(test[- ]drive|road test|drive it|take it for a drive)\b/i;
 
 const CONFIDENCE_RANK = { high: 0, medium: 1, low: 2 } as const;
 
@@ -236,6 +244,7 @@ export function diagnoseWithRules(
 
   return {
     schemaVersion: DIAGNOSIS_SCHEMA_VERSION,
+    round: 0,
     summary,
     drivability: { level: drivabilityLevel, headline, stopDrivingIf },
     safetyCritical,
@@ -243,6 +252,7 @@ export function diagnoseWithRules(
       ? { recommended: true, reason: mechanicReason }
       : { recommended: false, reason: null },
     likelyCauses,
+    ruledOut: [],
     inspectionSteps,
     toolsNeeded,
     codeNotes,
@@ -275,4 +285,64 @@ export function applySafetyFloor(
       reason: ai.seeMechanic.reason || rules.seeMechanic.reason,
     },
   };
+}
+
+export function applyConversationFloor(
+  ai: DiagnosisResult,
+  rulesFloor: DiagnosisResult,
+  previous: DiagnosisResult,
+): { result: DiagnosisResult; floor: FloorReport } {
+  const severity = (result: DiagnosisResult) =>
+    DRIVABILITY_LEVELS.indexOf(result.drivability.level);
+  const rulesRaised =
+    severity(rulesFloor) > severity(ai) ||
+    (!ai.safetyCritical && rulesFloor.safetyCritical) ||
+    (!ai.seeMechanic.recommended && rulesFloor.seeMechanic.recommended);
+  const afterRules = applySafetyFloor(ai, rulesFloor);
+  const previousKept =
+    severity(previous) > severity(afterRules) ||
+    (!afterRules.safetyCritical && previous.safetyCritical) ||
+    (!afterRules.seeMechanic.recommended && previous.seeMechanic.recommended);
+  let result = applySafetyFloor(afterRules, previous);
+  let stepsReplaced = false;
+
+  if (severity(result) >= DRIVABILITY_LEVELS.indexOf("drive_to_shop_only")) {
+    if (severity(previous) > severity(afterRules)) {
+      result = {
+        ...result,
+        inspectionSteps: previous.inspectionSteps,
+        toolsNeeded: previous.toolsNeeded,
+      };
+      stepsReplaced = true;
+    } else if (severity(rulesFloor) > severity(ai)) {
+      result = {
+        ...result,
+        inspectionSteps: rulesFloor.inspectionSteps,
+        toolsNeeded: rulesFloor.toolsNeeded,
+      };
+      stepsReplaced = true;
+    }
+  }
+
+  if (
+    result.safetyCritical ||
+    severity(result) >= DRIVABILITY_LEVELS.indexOf("drive_to_shop_only")
+  ) {
+    const safeSteps = result.inspectionSteps.filter(
+      (step) =>
+        !HANDS_ON_PATTERN.test(step.instruction) &&
+        !DRIVING_STEP_PATTERN.test(step.instruction),
+    );
+    if (safeSteps.length !== result.inspectionSteps.length) {
+      result = {
+        ...result,
+        inspectionSteps:
+          safeSteps.length > 0 ? safeSteps : rulesFloor.inspectionSteps,
+        toolsNeeded: safeSteps.length > 0 ? result.toolsNeeded : rulesFloor.toolsNeeded,
+      };
+      stepsReplaced = true;
+    }
+  }
+
+  return { result, floor: { rulesRaised, previousKept, stepsReplaced } };
 }
