@@ -101,16 +101,18 @@ export default async function DiagnosisReportPage({
         )}
 
         <section
-          className={`mt-6 rounded-xl border p-5 ${drivability.className}`}
+          className={`mt-6 rounded-lg border px-4 py-3 ${drivability.className}`}
         >
-          <h2 className="text-lg font-semibold">{drivability.label}</h2>
-          <p className="mt-2 leading-relaxed">{result.drivability.headline}</p>
+          <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
+            <h2 className="text-sm font-semibold">{drivability.label}</h2>
+            <p className="text-sm">{result.drivability.headline}</p>
+          </div>
           {result.drivability.stopDrivingIf.length > 0 ? (
-            <div className="mt-5 border-t border-current/20 pt-4">
-              <h3 className="text-sm font-semibold">
+            <div className="mt-3 border-t border-current/20 pt-3">
+              <h3 className="text-xs font-semibold">
                 Stop driving and get help if:
               </h3>
-              <ul className="mt-2 list-disc space-y-1 pl-5 text-sm">
+              <ul className="mt-1.5 list-disc space-y-0.5 pl-4 text-xs">
                 {result.drivability.stopDrivingIf.map((warning) => (
                   <li key={warning}>{warning}</li>
                 ))}
@@ -118,17 +120,6 @@ export default async function DiagnosisReportPage({
             </div>
           ) : null}
         </section>
-
-        {result.seeMechanic.recommended ? (
-          <section className="mt-6 rounded-lg border border-red-800 bg-red-950/40 p-4 text-red-200">
-            <h2 className="text-sm font-semibold">This needs a qualified mechanic</h2>
-            {result.seeMechanic.reason ? (
-              <p className="mt-2 text-sm leading-relaxed text-red-300">
-                {result.seeMechanic.reason}
-              </p>
-            ) : null}
-          </section>
-        ) : null}
 
         <section className="mt-6 rounded-xl border border-zinc-800 bg-zinc-900 p-6">
           <h2 className="text-xl font-semibold">What this points to</h2>
@@ -247,7 +238,13 @@ export default async function DiagnosisReportPage({
         ) : null}
 
         <footer className="mt-8 border-t border-zinc-800 pt-6">
-          <p className="text-xs text-zinc-500">
+          {result.seeMechanic.recommended && result.seeMechanic.reason ? (
+            <p className="text-xs leading-relaxed text-zinc-500">
+              Some of this repair is best done by a shop:{" "}
+              {result.seeMechanic.reason}
+            </p>
+          ) : null}
+          <p className="mt-3 text-xs text-zinc-500">
             Source:{" "}
             {session.resultSource === "ai"
               ? `AI${session.model ? ` · ${session.model}` : ""}`
