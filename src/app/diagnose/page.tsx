@@ -4,6 +4,7 @@ import {
   vehicleLabel,
 } from "@/app/diagnose/display";
 import { listSessions } from "@/app/diagnose/data";
+import { SiteHeader } from "@/components/site-header";
 import { createClient } from "@/lib/supabase/server";
 import Link from "next/link";
 import { redirect } from "next/navigation";
@@ -23,28 +24,16 @@ export default async function DiagnosisHistoryPage() {
   const sessions = await listSessions(supabase);
 
   return (
-    <main className="min-h-screen bg-zinc-950 px-6 py-10 text-zinc-100">
-      <div className="mx-auto max-w-4xl">
-        <header className="flex flex-wrap items-end justify-between gap-5">
-          <div>
-            <Link
-              href="/garage"
-              className="text-sm font-medium text-zinc-400 transition-colors hover:text-emerald-400"
-            >
-              My Garage
-            </Link>
-            <h1 className="mt-2 text-3xl font-bold tracking-tight">Diagnoses</h1>
+    <>
+      <SiteHeader />
+      <main className="min-h-screen bg-zinc-950 px-6 py-10 text-zinc-100">
+        <div className="mx-auto max-w-4xl">
+          <header>
+            <h1 className="text-3xl font-bold tracking-tight">Diagnoses</h1>
             <p className="mt-2 text-zinc-400">
               Every diagnosis you&apos;ve run, newest first.
             </p>
-          </div>
-          <Link
-            href="/diagnose/new"
-            className="rounded-lg bg-emerald-500 px-4 py-2.5 text-sm font-medium text-emerald-950 transition-colors hover:bg-emerald-400"
-          >
-            New diagnosis
-          </Link>
-        </header>
+          </header>
 
         {sessions === null ? (
           <p
@@ -137,7 +126,8 @@ export default async function DiagnosisHistoryPage() {
             })}
           </section>
         )}
-      </div>
-    </main>
+        </div>
+      </main>
+    </>
   );
 }

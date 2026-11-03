@@ -2,6 +2,7 @@ import {
   DiagnosisForm,
   type DiagnosisVehicleOption,
 } from "@/app/diagnose/new/diagnosis-form";
+import { SiteHeader } from "@/components/site-header";
 import { createClient } from "@/lib/supabase/server";
 import Link from "next/link";
 import { redirect } from "next/navigation";
@@ -55,14 +56,16 @@ export default async function NewDiagnosisPage({
     "";
 
   return (
-    <main className="min-h-screen bg-zinc-950 px-6 py-12 text-zinc-100">
-      <div className="mx-auto w-full max-w-2xl">
-        <Link
-          href="/garage"
-          className="text-sm font-medium text-zinc-400 transition-colors hover:text-emerald-400"
-        >
-          ← Back to Garage
-        </Link>
+    <>
+      <SiteHeader />
+      <main className="min-h-screen bg-zinc-950 px-6 py-12 text-zinc-100">
+        <div className="mx-auto w-full max-w-2xl">
+          <Link
+            href="/garage"
+            className="text-sm font-medium text-zinc-400 transition-colors hover:text-emerald-400"
+          >
+            ← Back to Garage
+          </Link>
 
         <section className="mt-6 rounded-xl border border-zinc-800 bg-zinc-900 p-6 sm:p-8">
           <h1 className="text-2xl font-semibold tracking-tight">New diagnosis</h1>
@@ -99,7 +102,8 @@ export default async function NewDiagnosisPage({
             />
           )}
         </section>
-      </div>
-    </main>
+        </div>
+      </main>
+    </>
   );
 }

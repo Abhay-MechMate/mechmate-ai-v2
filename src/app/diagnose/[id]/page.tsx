@@ -8,6 +8,7 @@ import {
   vehicleDetail,
   vehicleLabel,
 } from "@/app/diagnose/display";
+import { SiteHeader } from "@/components/site-header";
 import { createClient } from "@/lib/supabase/server";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
@@ -38,8 +39,10 @@ export default async function DiagnosisReportPage({
     : "/diagnose/new";
 
   return (
-    <main className="min-h-screen bg-zinc-950 px-6 py-10 text-zinc-100">
-      <div className="mx-auto max-w-3xl">
+    <>
+      <SiteHeader />
+      <main className="min-h-screen bg-zinc-950 px-6 py-10 text-zinc-100">
+        <div className="mx-auto max-w-3xl">
         <Link
           href="/diagnose"
           className="text-sm font-medium text-zinc-400 transition-colors hover:text-emerald-400"
@@ -258,7 +261,8 @@ export default async function DiagnosisReportPage({
             Start another diagnosis
           </Link>
         </footer>
-      </div>
-    </main>
+        </div>
+      </main>
+    </>
   );
 }
