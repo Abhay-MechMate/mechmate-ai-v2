@@ -15,6 +15,7 @@ describe("rule diagnosis", () => {
   it("handles the P0420 roadmap case", () => {
     const result = diagnoseWithRules({ dtcCodes: ["P0420"], symptoms: null }, vehicle);
     expect(result.likelyCauses[0].title).toBe("Aging or failed catalytic converter");
+    expect(result.likelyCauses[0].detail).toContain("scan for misfire or fuel-trim codes");
     expect(result.drivability.level).toBe("ok_to_drive");
     expect(result.codeNotes).toContainEqual(expect.objectContaining({ code: "P0420" }));
   });

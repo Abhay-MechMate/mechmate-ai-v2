@@ -26,6 +26,7 @@ export function validModelOutput(): DiagnosisModelOutput {
         system: "emissions",
         confidence: "high",
         explanation: "This is the most common cause of P0420 at higher mileage.",
+        detail: "Verify the oxygen-sensor readings and check for exhaust leaks first.",
         relatedCodes: ["P0420"],
       },
     ],

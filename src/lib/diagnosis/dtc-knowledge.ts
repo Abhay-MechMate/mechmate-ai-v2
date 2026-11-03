@@ -7,7 +7,13 @@ export type DtcEntry = {
   drivability: DrivabilityLevel;
   headline: string;
   safetyCritical: boolean;
-  causes: { title: string; system: VehicleSystem; confidence: Confidence; explanation: string }[];
+  causes: {
+    title: string;
+    system: VehicleSystem;
+    confidence: Confidence;
+    explanation: string;
+    detail?: string;
+  }[];
   steps: { instruction: string; difficulty: StepDifficulty }[];
   tools: string[];
   stopDrivingIf: string[];
@@ -44,8 +50,8 @@ export const DTC_KNOWLEDGE: Readonly<Record<string, DtcEntry>> = {
     headline: "Drive gently and get it checked soon — a steady misfire can damage the catalytic converter.",
     safetyCritical: false,
     causes: [
-      { title: "Failing cylinder 1 ignition coil", system: "ignition", confidence: "high", explanation: "Coils are the most common single-cylinder misfire cause and are easy to test by swapping." },
-      { title: "Worn or fouled cylinder 1 spark plug", system: "ignition", confidence: "high", explanation: "A worn or oil-fouled plug can't fire reliably." },
+      { title: "Failing cylinder 1 ignition coil", system: "ignition", confidence: "high", explanation: "Coils are the most common single-cylinder misfire cause and are easy to test by swapping.", detail: "With the engine off, swap the cylinder 1 coil with a neighboring cylinder, then see whether the misfire code moves to that cylinder." },
+      { title: "Worn or fouled cylinder 1 spark plug", system: "ignition", confidence: "high", explanation: "A worn or oil-fouled plug can't fire reliably.", detail: "Remove the cylinder 1 plug and inspect it for wear, oil, or carbon before considering replacement." },
       { title: "Clogged or failing cylinder 1 fuel injector", system: "fuel", confidence: "medium", explanation: "If the coil and plug are good, the injector may not be delivering fuel." },
       { title: "Vacuum leak near cylinder 1", system: "air_intake", confidence: "low", explanation: "A leaking intake gasket by one cylinder can lean out just that cylinder." },
       { title: "Low compression in cylinder 1", system: "engine", confidence: "low", explanation: "A valve or ring problem in that cylinder; confirmed with a compression test." },
@@ -65,10 +71,10 @@ export const DTC_KNOWLEDGE: Readonly<Record<string, DtcEntry>> = {
     headline: "Usually safe to drive short-term; get it diagnosed within a few weeks to avoid failing emissions.",
     safetyCritical: false,
     causes: [
-      { title: "Aging or failed catalytic converter", system: "emissions", confidence: "high", explanation: "The most common cause, especially past about 100,000 miles." },
-      { title: "Faulty downstream or upstream oxygen sensor", system: "emissions", confidence: "medium", explanation: "A lazy O2 sensor can make a good converter look bad." },
-      { title: "Exhaust leak near the oxygen sensors", system: "exhaust", confidence: "medium", explanation: "Outside air entering the exhaust skews the sensor readings." },
-      { title: "Engine problem that damaged the converter (misfire or rich running)", system: "engine", confidence: "low", explanation: "Unburned fuel overheats the converter; fix the root cause before replacing it." },
+      { title: "Aging or failed catalytic converter", system: "emissions", confidence: "high", explanation: "The most common cause, especially past about 100,000 miles.", detail: "Before condemning the converter, scan for misfire or fuel-trim codes, check for exhaust leaks, and compare the upstream and downstream oxygen-sensor readings." },
+      { title: "Faulty downstream or upstream oxygen sensor", system: "emissions", confidence: "medium", explanation: "A lazy O2 sensor can make a good converter look bad.", detail: "Compare both oxygen-sensor readings in live data. The downstream reading should stay fairly steady when the converter is working." },
+      { title: "Exhaust leak near the oxygen sensors", system: "exhaust", confidence: "medium", explanation: "Outside air entering the exhaust skews the sensor readings.", detail: "With the engine cold, check before and around the converter for ticking sounds or soot marks that point to a leak." },
+      { title: "Engine problem that damaged the converter (misfire or rich running)", system: "engine", confidence: "low", explanation: "Unburned fuel overheats the converter; fix the root cause before replacing it.", detail: "Scan for misfire and fuel-trim codes first. Those root-cause faults need attention before the converter is evaluated for replacement." },
     ],
     steps: [
       { instruction: "Scan for other codes; fix any misfire or fuel-trim codes first.", difficulty: "diy_moderate" },

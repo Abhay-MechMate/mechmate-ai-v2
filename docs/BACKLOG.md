@@ -8,6 +8,7 @@ Nothing here is scheduled — that's the point. When a phase opens, we pull from
 - Real-time parts availability via store APIs / affiliate programs — roadmap Phase 4 upgrade
 - Maintenance reminders and service tracking per vehicle
 - Repair cost estimates per diagnosis
+- Guided assistant handoff: user feedback (2026-11-03) — the report's "First checks" section is the natural entry point for the Phase 3 conversational assistant; Phase 3 design must make that section the bridge into follow-up Q&A
 - (add more as they come — just ask)
 
 ## Rules

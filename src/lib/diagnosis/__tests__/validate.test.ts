@@ -3,8 +3,19 @@ import { extractJson, parseDiagnosisOutput } from "../validate";
 import { validModelOutput } from "./fixtures";
 
 describe("AI output validation", () => {
-  it("accepts a valid fixture", () => {
-    expect(parseDiagnosisOutput(validModelOutput(), ["P0420"])).not.toBeNull();
+  it("accepts and preserves cause detail", () => {
+    const result = parseDiagnosisOutput(validModelOutput(), ["P0420"]);
+    expect(result?.likelyCauses[0].detail).toBe(
+      "Verify the oxygen-sensor readings and check for exhaust leaks first.",
+    );
+  });
+
+  it("accepts cause output without detail for backward compatibility", () => {
+    const fixture = validModelOutput();
+    delete fixture.likelyCauses[0].detail;
+    const result = parseDiagnosisOutput(fixture, ["P0420"]);
+    expect(result).not.toBeNull();
+    expect(result?.likelyCauses[0].detail).toBeUndefined();
   });
 
   it("rejects missing required objects and bad enums", () => {

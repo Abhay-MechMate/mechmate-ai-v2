@@ -101,9 +101,9 @@ export default async function DiagnosisReportPage({
         )}
 
         <section
-          className={`mt-6 rounded-xl border p-6 ${drivability.className}`}
+          className={`mt-6 rounded-xl border p-5 ${drivability.className}`}
         >
-          <h2 className="text-2xl font-bold">{drivability.label}</h2>
+          <h2 className="text-lg font-semibold">{drivability.label}</h2>
           <p className="mt-2 leading-relaxed">{result.drivability.headline}</p>
           {result.drivability.stopDrivingIf.length > 0 ? (
             <div className="mt-5 border-t border-current/20 pt-4">
@@ -120,8 +120,8 @@ export default async function DiagnosisReportPage({
         </section>
 
         {result.seeMechanic.recommended ? (
-          <section className="mt-6 rounded-xl border border-red-800 bg-red-950/40 p-5 text-red-200">
-            <h2 className="font-semibold">This needs a qualified mechanic</h2>
+          <section className="mt-6 rounded-lg border border-red-800 bg-red-950/40 p-4 text-red-200">
+            <h2 className="text-sm font-semibold">This needs a qualified mechanic</h2>
             {result.seeMechanic.reason ? (
               <p className="mt-2 text-sm leading-relaxed text-red-300">
                 {result.seeMechanic.reason}
@@ -174,6 +174,11 @@ export default async function DiagnosisReportPage({
                         <p className="mt-3 text-sm leading-relaxed text-zinc-400">
                           {cause.explanation}
                         </p>
+                        {cause.detail ? (
+                          <p className="mt-3 rounded-lg border border-zinc-800 bg-zinc-950/60 px-3 py-2 text-sm leading-relaxed text-zinc-400">
+                            {cause.detail}
+                          </p>
+                        ) : null}
                         {cause.relatedCodes.length > 0 ? (
                           <p className="mt-2 font-mono text-xs text-zinc-500">
                             {cause.relatedCodes.join(", ")}

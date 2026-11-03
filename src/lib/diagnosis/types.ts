@@ -34,6 +34,7 @@ export type LikelyCause = {
   system: VehicleSystem;
   confidence: Confidence;
   explanation: string;
+  detail?: string;
   relatedCodes: string[];
 };
 

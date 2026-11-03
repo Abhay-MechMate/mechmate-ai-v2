@@ -66,6 +66,7 @@ OUTPUT
 Return ONLY a JSON object that matches the provided schema. No markdown and no extra text.
 - summary: 2 to 4 plain-English sentences: what the codes or symptoms most likely mean for this vehicle, and the overall urgency.
 - likelyCauses: 1 to 5 items, most likely first. explanation: 1 to 2 sentences on why it fits this input. relatedCodes: the input codes this cause explains (empty if none).
+- likelyCauses items: also include detail: 1 to 2 sentences of extra practical info on that specific part or subsystem - what the part does, how it typically fails, and what to verify first. Never prices, part numbers or store availability.
 - drivability.headline: one sentence, for example "Safe to drive short-term; get it checked within a few weeks." drivability.stopDrivingIf: 1 to 4 concrete warning signs that mean stop now.
 - seeMechanic.reason: one sentence when recommended is true; otherwise null.
 - inspectionSteps: 2 to 6 steps, easiest and least invasive first, one action per step. difficulty: "diy_easy" (no tools or basic tools), "diy_moderate" (scan tool or hand tools and some experience), "shop_recommended".
@@ -104,12 +105,13 @@ export const DIAGNOSIS_JSON_SCHEMA = {
       items: {
         type: "object",
         additionalProperties: false,
-        required: ["title", "system", "confidence", "explanation", "relatedCodes"],
+        required: ["title", "system", "confidence", "explanation", "detail", "relatedCodes"],
         properties: {
           title: { type: "string" },
           system: { type: "string", enum: [...VEHICLE_SYSTEMS] },
           confidence: { type: "string", enum: [...CONFIDENCE_LEVELS] },
           explanation: { type: "string" },
+          detail: { type: "string" },
           relatedCodes: { type: "array", items: { type: "string" } },
         },
       },
