@@ -107,7 +107,14 @@ async function attemptStructured<T>(
       ? (message as Record<string, unknown>).content : null;
     if (typeof content !== "string") return { ok: false, reason: "invalid_output" };
     const value = args.parse(extractJson(content));
-    if (!value) return { ok: false, reason: "invalid_output", status: response.status };
+    if (!value) {
+      console.warn("[diagnosis] ai output failed validation", {
+        schemaName: args.schemaName, model,
+        finishReason: choiceRecord.finish_reason ?? null,
+        contentHead: content.slice(0, 300),
+      });
+      return { ok: false, reason: "invalid_output", status: response.status };
+    }
     const usage = typeof payload.usage === "object" && payload.usage !== null
       ? (payload.usage as Record<string, unknown>) : {};
     return {
@@ -172,7 +179,7 @@ export async function diagnoseWithAi(
 export function askQuestionsWithAi(ctx: ConversationContext): Promise<AiResponse<QuestionsParsed>> {
   return requestStructured({
     messages: buildQuestionMessages(ctx), schemaName: "assistant_questions",
-    schema: QUESTIONS_JSON_SCHEMA, maxTokens: 800,
+    schema: QUESTIONS_JSON_SCHEMA, maxTokens: 1600,
     parse: (value) => parseQuestionsOutput(value, ctx.baseline, ctx.round),
   });
 }
@@ -184,7 +191,7 @@ export function rediagnoseWithAi(
   const allowedCodes = [...new Set([...ctx.input.dtcCodes, ...turn.extraCodes])];
   return requestStructured({
     messages: buildRediagnosisMessages(ctx, turn), schemaName: "rediagnosis",
-    schema: REDIAGNOSIS_JSON_SCHEMA, maxTokens: 2400,
+    schema: REDIAGNOSIS_JSON_SCHEMA, maxTokens: 3200,
     parse: (value) => parseRediagnosisOutput(value, allowedCodes, ctx.baseline, ctx.round),
   });
 }

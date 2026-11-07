@@ -141,7 +141,7 @@ describe("OpenRouter client", () => {
     expect(result.ok).toBe(true);
     const body = JSON.parse((fetchMock.mock.calls[0][1] as RequestInit).body as string);
     expect(body.response_format.json_schema.name).toBe("assistant_questions");
-    expect(body.max_tokens).toBe(800);
+    expect(body.max_tokens).toBe(1600);
   });
 
   it("retries an invalid rediagnosis with the backup model", async () => {
@@ -182,6 +182,6 @@ describe("OpenRouter client", () => {
     expect(result.ok).toBe(true);
     const body = JSON.parse((fetchMock.mock.calls[1][1] as RequestInit).body as string);
     expect(body.model).toBe(DEFAULT_BACKUP_MODEL);
-    expect(body.max_tokens).toBe(2400);
+    expect(body.max_tokens).toBe(3200);
   });
 });
