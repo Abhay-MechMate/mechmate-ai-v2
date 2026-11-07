@@ -95,6 +95,11 @@ export default async function DiagnosisHistoryPage() {
                           Built-in guide
                         </span>
                       ) : null}
+                      {session.refinedRound > 0 ? (
+                        <span className="rounded-full border border-zinc-700 bg-zinc-800 px-2.5 py-1 text-xs text-zinc-300">
+                          Refined ×{session.refinedRound}
+                        </span>
+                      ) : null}
                     </div>
                   </div>
 

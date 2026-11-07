@@ -1,10 +1,10 @@
 import { describe, expect, it } from "vitest";
 import { normalizeResult } from "../upgrade";
-import { validModelOutput, validResult } from "./fixtures";
+import { validResult, validV1Result } from "./fixtures";
 
 describe("diagnosis result upgrades", () => {
   it("upgrades v1 in memory without changing the source", () => {
-    const legacy = { schemaVersion: 1 as const, ...validModelOutput() };
+    const legacy = validV1Result();
     const result = normalizeResult(legacy);
     expect(result).toMatchObject({ schemaVersion: 2, round: 0, ruledOut: [] });
     expect(legacy).not.toHaveProperty("round");

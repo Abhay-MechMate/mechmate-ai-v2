@@ -1,14 +1,27 @@
+import {
+  countRecentAssistantTurns,
+  listTurns,
+} from "@/app/diagnose/assistant-data";
 import { getSession } from "@/app/diagnose/data";
 import {
+  assistantUnavailableReason,
   CONFIDENCE_DISPLAY,
-  DIFFICULTY_LABEL,
   DRIVABILITY_DISPLAY,
   fallbackReasonLabel,
   formatSessionDate,
   vehicleDetail,
   vehicleLabel,
 } from "@/app/diagnose/display";
+import { FirstChecks, type EntryState } from "@/app/diagnose/[id]/first-checks";
+import { DiffChips } from "@/app/diagnose/[id]/assistant/turn-views";
 import { SiteHeader } from "@/components/site-header";
+import {
+  MAX_TURNS_PER_SESSION,
+  assistantDailyLimit,
+} from "@/lib/diagnosis/assistant-types";
+import { deriveConversation } from "@/lib/diagnosis/conversation";
+import { diffResults } from "@/lib/diagnosis/diff";
+import { isAiConfigured } from "@/lib/diagnosis/openrouter";
 import { createClient } from "@/lib/supabase/server";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
@@ -16,6 +29,8 @@ import { notFound, redirect } from "next/navigation";
 type DiagnosisReportPageProps = {
   params: Promise<{ id: string }>;
 };
+
+export const maxDuration = 60;
 
 // No page-level <Suspense> (see diagnose/page.tsx note).
 export default async function DiagnosisReportPage({
@@ -32,8 +47,53 @@ export default async function DiagnosisReportPage({
   const session = await getSession(supabase, id);
   if (!session) notFound();
 
+  const [turns, recent] = await Promise.all([
+    listTurns(supabase, id),
+    countRecentAssistantTurns(supabase, user.id),
+  ]);
+
+  const conversation = turns ? deriveConversation(turns, session) : null;
+  const configured = isAiConfigured();
+  const dailyLimited = recent.count >= assistantDailyLimit();
+  const resetAt = recent.oldestAt
+    ? new Date(new Date(recent.oldestAt).getTime() + 86_400_000).toISOString()
+    : undefined;
+  let entry: EntryState;
+  if (!conversation) {
+    entry = { kind: "unavailable", reason: "We couldn't load this conversation." };
+  } else if (conversation.next.kind === "answer") {
+    entry = {
+      kind: "resume",
+      href: `/diagnose/${id}/assistant#round-${conversation.next.round}`,
+    };
+  } else if (
+    conversation.next.kind === "retry" ||
+    conversation.next.kind === "stopped"
+  ) {
+    entry = { kind: "view", href: `/diagnose/${id}/assistant` };
+  } else if ((turns?.length ?? 0) >= MAX_TURNS_PER_SESSION) {
+    entry = {
+      kind: "unavailable",
+      reason: assistantUnavailableReason("session_limit"),
+    };
+  } else if (!configured || dailyLimited) {
+    entry = {
+      kind: "unavailable",
+      reason: assistantUnavailableReason(
+        configured ? "daily_limit" : "not_configured",
+        resetAt,
+      ),
+    };
+  } else {
+    entry = { kind: conversation.next.kind };
+  }
+
   const { result, vehicleSnapshot } = session;
   const drivability = DRIVABILITY_DISPLAY[result.drivability.level];
+  const reportDiff = diffResults(session.initialResult, result);
+  const latestUpdate = conversation?.rounds
+    .filter((item) => item.rediagnosis?.result)
+    .at(-1)?.rediagnosis;
   const startAgainHref = session.vehicleId
     ? `/diagnose/new?vehicle=${session.vehicleId}`
     : "/diagnose/new";
@@ -97,8 +157,25 @@ export default async function DiagnosisReportPage({
             {session.fallbackReason === "daily_limit"
               ? "You've reached today's AI analysis limit, so this report uses MechMate's built-in guide."
               : "AI analysis was unavailable, so this report uses MechMate's built-in guide. It's more general than an AI analysis."}
+            {result.round > 0 ? (
+              <span className="mt-2 block text-amber-300">
+                Since refined by AI from your answers.
+              </span>
+            ) : null}
           </p>
         )}
+
+        {result.round > 0 ? (
+          <Link
+            href={`/diagnose/${id}/assistant`}
+            className="mt-3 flex flex-wrap items-center gap-x-2 text-sm text-emerald-300 transition-colors hover:text-emerald-200"
+          >
+            <span>Refined with the assistant</span>
+            <span className="text-zinc-600">·</span>
+            <span>round {result.round} of 3</span>
+            <span>· View the conversation →</span>
+          </Link>
+        ) : null}
 
         <section
           className={`mt-6 rounded-lg border px-4 py-3 ${drivability.className}`}
@@ -184,25 +261,38 @@ export default async function DiagnosisReportPage({
           )}
         </section>
 
-        <section className="mt-6 rounded-xl border border-zinc-800 bg-zinc-900 p-6">
-          <h2 className="text-xl font-semibold">First checks</h2>
-          <ol className="mt-5 space-y-4">
-            {result.inspectionSteps.map((step, index) => (
-              <li key={`${step.instruction}:${index}`} className="flex gap-3">
-                <span className="text-sm font-semibold text-emerald-400">
-                  {index + 1}.
-                </span>
-                <div>
-                  <p className="text-sm leading-relaxed text-zinc-300">
-                    {step.instruction}
+        {result.ruledOut.length > 0 ? (
+          <section className="mt-6 rounded-xl border border-zinc-800 bg-zinc-900 p-6">
+            <h2 className="text-xl font-semibold">Ruled out</h2>
+            <ul className="mt-4 space-y-4">
+              {result.ruledOut.map((cause) => (
+                <li
+                  key={cause.title}
+                  className="border-t border-zinc-800 pt-4 first:border-0 first:pt-0"
+                >
+                  <h3 className="text-sm font-medium text-zinc-400 line-through">
+                    {cause.title}
+                  </h3>
+                  <p className="mt-1 text-sm leading-relaxed text-zinc-500">
+                    {cause.reason}
                   </p>
-                  <span className="mt-2 inline-flex rounded-full bg-zinc-800 px-2 py-1 text-xs text-zinc-400">
-                    {DIFFICULTY_LABEL[step.difficulty]}
-                  </span>
-                </div>
-              </li>
-            ))}
-          </ol>
+                </li>
+              ))}
+            </ul>
+          </section>
+        ) : null}
+
+        <section
+          id="first-checks"
+          className="mt-6 scroll-mt-24 rounded-xl border border-zinc-800 bg-zinc-900 p-6"
+        >
+          <h2 className="text-xl font-semibold">First checks</h2>
+          <FirstChecks
+            sessionId={id}
+            revision={session.revision}
+            steps={result.inspectionSteps}
+            entry={entry}
+          />
         </section>
 
         {result.toolsNeeded.length > 0 ? (
@@ -237,6 +327,17 @@ export default async function DiagnosisReportPage({
           </section>
         ) : null}
 
+        {result.round > 0 ? (
+          <details className="mt-6 rounded-xl border border-zinc-800 bg-zinc-900 p-6">
+            <summary className="cursor-pointer text-base font-semibold text-zinc-200">
+              What changed since the first pass
+            </summary>
+            <div className="mt-4">
+              <DiffChips diff={reportDiff} />
+            </div>
+          </details>
+        ) : null}
+
         <footer className="mt-8 border-t border-zinc-800 pt-6">
           {result.seeMechanic.recommended && result.seeMechanic.reason ? (
             <p className="text-xs leading-relaxed text-zinc-500">
@@ -250,6 +351,13 @@ export default async function DiagnosisReportPage({
               ? `AI${session.model ? ` · ${session.model}` : ""}`
               : `MechMate built-in rules · ${fallbackReasonLabel(session.fallbackReason)}`}
           </p>
+          {result.round > 0 ? (
+            <p className="mt-1 text-xs text-zinc-500">
+              Updated by the assistant: AI
+              {latestUpdate?.model ? ` · ${latestUpdate.model}` : ""} · round{" "}
+              {result.round}
+            </p>
+          ) : null}
           <p className="mt-3 text-xs leading-relaxed text-zinc-500">
             MechMate&apos;s guidance is informational and may be wrong. Confirm
             the cause before buying parts, and see a qualified mechanic for

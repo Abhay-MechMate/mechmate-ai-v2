@@ -5,6 +5,7 @@ import type {
   StepDifficulty,
   VehicleSnapshot,
 } from "@/lib/diagnosis/types";
+import type { AssistantState } from "@/lib/diagnosis/assistant-types";
 
 export function vehicleLabel(snapshot: VehicleSnapshot): string {
   return (
@@ -76,6 +77,12 @@ export const DIFFICULTY_LABEL: Record<StepDifficulty, string> = {
   shop_recommended: "Shop recommended",
 };
 
+export const ASSISTANT_STATE_LABEL: Record<AssistantState, string> = {
+  narrowed: "Narrowed down",
+  needs_shop: "Needs shop equipment",
+  keep_going: "More to learn",
+};
+
 export function formatSessionDate(iso: string): string {
   return new Date(iso).toLocaleString("en-US", {
     dateStyle: "medium",
@@ -97,4 +104,32 @@ const FALLBACK_REASON_LABEL: Record<FallbackReason, string> = {
 
 export function fallbackReasonLabel(reason: FallbackReason | null): string {
   return reason ? FALLBACK_REASON_LABEL[reason] : "AI unavailable";
+}
+
+export function formatResetTime(iso: string): string {
+  return new Date(iso).toLocaleString("en-US", {
+    dateStyle: "medium",
+    timeStyle: "short",
+  });
+}
+
+export function assistantUnavailableReason(
+  reason: FallbackReason | "session_limit",
+  resetAt?: string,
+): string {
+  if (reason === "not_configured") {
+    return "The assistant needs AI, which isn't set up on this site.";
+  }
+  if (reason === "daily_limit") {
+    return resetAt
+      ? `You've used today's assistant limit. It resets around ${formatResetTime(resetAt)}.`
+      : "You've used today's assistant limit. Try again later.";
+  }
+  if (reason === "credits_exhausted") {
+    return "MechMate's AI budget for this month is used up. Your report still works; the assistant will be back next month.";
+  }
+  if (reason === "session_limit") {
+    return "This conversation has reached its limit. Start a new diagnosis to keep going.";
+  }
+  return `I couldn't come up with questions right now (${fallbackReasonLabel(reason)}). Your report is unchanged. Try again in a minute.`;
 }

@@ -9,6 +9,11 @@ Nothing here is scheduled — that's the point. When a phase opens, we pull from
 - Maintenance reminders and service tracking per vehicle
 - Repair cost estimates per diagnosis
 - Guided assistant handoff: user feedback (2026-11-03) — the report's "First checks" section is the natural entry point for the Phase 3 conversational assistant; Phase 3 design must make that section the bridge into follow-up Q&A
+- Open-ended assistant chat beyond the per-round note — Phase 3 follow-up
+- Persist draft answers (localStorage keyed by turn id)
+- Lock `diagnostic_sessions.result` writes to RPC-only before any sharing feature
+- Backport 'floor replaces steps at ≥ drive_to_shop_only' to the first-pass engine
+- Fix SYSTEM_PROMPT tail ('non-mechanic') to match the DIY voice
 - (add more as they come — just ask)
 
 ## Rules

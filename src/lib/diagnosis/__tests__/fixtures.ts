@@ -1,4 +1,9 @@
-import type { DiagnosisModelOutput, DiagnosisResult, VehicleSnapshot } from "../types";
+import type {
+  DiagnosisModelOutput,
+  DiagnosisResult,
+  DiagnosisResultV1,
+  VehicleSnapshot,
+} from "../types";
 
 export const vehicle: VehicleSnapshot = {
   nickname: null,
@@ -47,4 +52,47 @@ export function validModelOutput(): DiagnosisModelOutput {
 
 export function validResult(): DiagnosisResult {
   return { schemaVersion: 2, round: 0, ruledOut: [], ...validModelOutput() };
+}
+
+export function validV1Result(): DiagnosisResultV1 {
+  return { schemaVersion: 1, ...validModelOutput() };
+}
+
+export function validQuestionsOutput() {
+  return {
+    intro: "Two readings will split the converter from the sensors:",
+    canNarrowFurther: true,
+    stopReason: null,
+    questions: [
+      {
+        kind: "single_choice",
+        prompt: "At steady rpm, what does the downstream oxygen sensor show?",
+        why: "This shows whether the converter is storing oxygen.",
+        options: ["Steady", "Switching like upstream"],
+        requires: "scan_tool",
+        targets: ["Aging catalytic converter"],
+      },
+      {
+        kind: "short_text",
+        prompt: "Do you see soot around the exhaust joints?",
+        why: "A leak can skew the oxygen-sensor reading.",
+        options: [],
+        requires: "look_listen",
+        targets: ["Aging catalytic converter"],
+      },
+    ],
+  };
+}
+
+export function validRediagnosisOutput() {
+  return {
+    ...validModelOutput(),
+    ruledOut: [],
+    changes: {
+      headline: "The downstream reading makes the sensor more likely.",
+      reasons: ["The downstream signal stayed steady while the upstream signal switched."],
+    },
+    noteReply: null,
+    assistantState: "narrowed",
+  };
 }
