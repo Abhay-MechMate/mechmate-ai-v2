@@ -16,6 +16,7 @@ describe("rule diagnosis", () => {
     const result = diagnoseWithRules({ dtcCodes: ["P0420"], symptoms: null }, vehicle);
     expect(result.likelyCauses[0].title).toBe("Aging or failed catalytic converter");
     expect(result.likelyCauses[0].detail).toContain("scan for misfire or fuel-trim codes");
+    expect(result.likelyCauses[0].settlingTest).toContain("downstream signal mirrors");
     expect(result.drivability.level).toBe("ok_to_drive");
     expect(result.drivability.stopDrivingIf).toEqual([]);
     expect(result.codeNotes).toContainEqual(expect.objectContaining({ code: "P0420" }));

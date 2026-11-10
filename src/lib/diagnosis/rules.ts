@@ -60,10 +60,15 @@ function mergeCauses(causes: LikelyCause[]): LikelyCause[] {
       indexes.set(key, merged.length);
       merged.push({ ...cause, relatedCodes: [...cause.relatedCodes] });
     } else {
-      merged[existingIndex].relatedCodes = dedupeStrings([
-        ...merged[existingIndex].relatedCodes,
+      const existing = merged[existingIndex];
+      existing.relatedCodes = dedupeStrings([
+        ...existing.relatedCodes,
         ...cause.relatedCodes,
       ]);
+      if (!existing.detail && cause.detail) existing.detail = cause.detail;
+      if (!existing.settlingTest && cause.settlingTest) {
+        existing.settlingTest = cause.settlingTest;
+      }
     }
   }
   return merged.slice(0, 5);

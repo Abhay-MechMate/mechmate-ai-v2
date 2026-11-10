@@ -10,6 +10,21 @@ describe("AI output validation", () => {
     );
   });
 
+  it("accepts and preserves a settling test", () => {
+    const result = parseDiagnosisOutput(validModelOutput(), ["P0420"]);
+    expect(result?.likelyCauses[0].settlingTest).toContain(
+      "A downstream signal that mirrors the upstream supports a weak converter",
+    );
+  });
+
+  it("accepts cause output without a settling test for backward compatibility", () => {
+    const fixture = validModelOutput();
+    delete fixture.likelyCauses[0].settlingTest;
+    const result = parseDiagnosisOutput(fixture, ["P0420"]);
+    expect(result).not.toBeNull();
+    expect(result?.likelyCauses[0].settlingTest).toBeUndefined();
+  });
+
   it("accepts cause output without detail for backward compatibility", () => {
     const fixture = validModelOutput();
     delete fixture.likelyCauses[0].detail;

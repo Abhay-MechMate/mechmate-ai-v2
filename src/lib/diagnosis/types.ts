@@ -35,6 +35,7 @@ export type LikelyCause = {
   confidence: Confidence;
   explanation: string;
   detail?: string;
+  settlingTest?: string;
   relatedCodes: string[];
 };
 

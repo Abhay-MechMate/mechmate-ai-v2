@@ -87,10 +87,14 @@ export function parseDiagnosisOutput(
     const title = trimRequired(item.title);
     const explanation = trimRequired(item.explanation);
     const detail = item.detail === undefined ? undefined : trimRequired(item.detail);
+    const settlingTest = item.settlingTest === undefined
+      ? undefined
+      : trimRequired(item.settlingTest);
     if (
       !title ||
       !explanation ||
       (item.detail !== undefined && !detail) ||
+      (item.settlingTest !== undefined && !settlingTest) ||
       !inArray(item.system, VEHICLE_SYSTEMS) ||
       !inArray(item.confidence, CONFIDENCE_LEVELS) ||
       !isStringArray(item.relatedCodes)
@@ -103,6 +107,7 @@ export function parseDiagnosisOutput(
       confidence: item.confidence,
       explanation,
       ...(detail ? { detail } : {}),
+      ...(settlingTest ? { settlingTest } : {}),
       relatedCodes: item.relatedCodes
         .map((code) => code.trim().toUpperCase())
         .filter((code) => DTC_PATTERN.test(code)),

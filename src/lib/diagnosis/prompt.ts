@@ -70,7 +70,7 @@ OUTPUT
 Return ONLY a JSON object that matches the provided schema. No markdown and no extra text.
 - summary: 2 to 4 plain-English sentences: what the codes or symptoms most likely mean for this vehicle, and the overall urgency.
 - likelyCauses: 1 to 5 items, most likely first. explanation: 1 to 2 sentences on why it fits this input. relatedCodes: the input codes this cause explains (empty if none).
-- likelyCauses items: also include detail: 1 to 2 sentences of extra practical info on that specific part or subsystem - what the part does, how it typically fails, and what to verify first. Never prices, part numbers or store availability.
+- likelyCauses items: also include detail: 1 to 2 sentences of extra practical info on that specific part or subsystem - what the part does, how it typically fails, and what to verify first. Also include settlingTest: 1 to 2 sentences naming THE single test or observation that best confirms or rules out this cause, and what each result would mean. Keep settlingTest a test or observation, never a parts recommendation. Never include prices, part numbers or store availability in either field.
 - drivability.headline: one sentence, for example "Safe to drive short-term; get it checked within a few weeks." drivability.stopDrivingIf: 0 items unless the verdict is "drive_to_shop_only" or "do_not_drive"; when present, 1 to 4 items that each name the specific damage or danger of continuing to drive, tied to this diagnosis.
 - seeMechanic.reason: one sentence when recommended is true; otherwise null.
 - inspectionSteps: 2 to 6 steps, easiest and least invasive first, one action per step. difficulty: "diy_easy" (no tools or basic tools), "diy_moderate" (scan tool or hand tools and some experience), "shop_recommended".
@@ -109,13 +109,14 @@ export const DIAGNOSIS_JSON_SCHEMA = {
       items: {
         type: "object",
         additionalProperties: false,
-        required: ["title", "system", "confidence", "explanation", "detail", "relatedCodes"],
+        required: ["title", "system", "confidence", "explanation", "detail", "settlingTest", "relatedCodes"],
         properties: {
           title: { type: "string" },
           system: { type: "string", enum: [...VEHICLE_SYSTEMS] },
           confidence: { type: "string", enum: [...CONFIDENCE_LEVELS] },
           explanation: { type: "string" },
           detail: { type: "string" },
+          settlingTest: { type: "string" },
           relatedCodes: { type: "array", items: { type: "string" } },
         },
       },

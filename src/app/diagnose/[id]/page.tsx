@@ -206,6 +206,11 @@ export default async function DiagnosisReportPage({
 
         <section className="mt-6 rounded-xl border border-zinc-800 bg-zinc-900 p-6">
           <h2 className="text-xl font-semibold">Likely causes</h2>
+          <p className="mt-2 text-sm leading-relaxed text-zinc-400">
+            A stored code points to a system to check, not a failed part. Confirm
+            with the test under each cause before buying anything — replacing
+            parts to see if they fix it is how repair bills balloon.
+          </p>
           {result.likelyCauses.length === 0 ? (
             <p className="mt-3 text-sm leading-relaxed text-zinc-400">
               Not enough information to rank causes. Try adding a trouble code
@@ -247,6 +252,14 @@ export default async function DiagnosisReportPage({
                           <p className="mt-3 rounded-lg border border-zinc-800 bg-zinc-950/60 px-3 py-2 text-sm leading-relaxed text-zinc-400">
                             {cause.detail}
                           </p>
+                        ) : null}
+                        {cause.settlingTest ? (
+                          <div className="mt-3 rounded-lg border border-emerald-900/60 bg-emerald-950/20 px-3 py-2 text-sm leading-relaxed text-emerald-100/90">
+                            <p className="text-xs font-semibold uppercase tracking-wide text-emerald-400">
+                              The test that settles it:
+                            </p>
+                            <p className="mt-1">{cause.settlingTest}</p>
+                          </div>
                         ) : null}
                         {cause.relatedCodes.length > 0 ? (
                           <p className="mt-2 font-mono text-xs text-zinc-500">

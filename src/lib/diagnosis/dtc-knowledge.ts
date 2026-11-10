@@ -13,6 +13,7 @@ export type DtcEntry = {
     confidence: Confidence;
     explanation: string;
     detail?: string;
+    settlingTest?: string;
   }[];
   steps: { instruction: string; difficulty: StepDifficulty }[];
   tools: string[];
@@ -55,11 +56,11 @@ export const DTC_KNOWLEDGE: Readonly<Record<string, DtcEntry>> = {
     headline: "Drive gently and get it checked soon — a steady misfire can damage the catalytic converter.",
     safetyCritical: false,
     causes: [
-      { title: "Failing cylinder 1 ignition coil", system: "ignition", confidence: "high", explanation: "Coils are the most common single-cylinder misfire cause and are easy to test by swapping.", detail: "With the engine off, swap the cylinder 1 coil with a neighboring cylinder, then see whether the misfire code moves to that cylinder." },
+      { title: "Failing cylinder 1 ignition coil", system: "ignition", confidence: "high", explanation: "Coils are the most common single-cylinder misfire cause and are easy to test by swapping.", detail: "With the engine off, swap the cylinder 1 coil with a neighboring cylinder, then see whether the misfire code moves to that cylinder.", settlingTest: "Swap the cylinder 1 coil with a neighboring cylinder and rescan after running the engine. If the misfire code moves with the coil, the coil is the cause; if it stays on cylinder 1, look at the plug, injector, or compression instead." },
       { title: "Worn or fouled cylinder 1 spark plug", system: "ignition", confidence: "high", explanation: "A worn or oil-fouled plug can't fire reliably.", detail: "Remove the cylinder 1 plug and inspect it for wear, oil, or carbon before considering replacement." },
       { title: "Clogged or failing cylinder 1 fuel injector", system: "fuel", confidence: "medium", explanation: "If the coil and plug are good, the injector may not be delivering fuel." },
       { title: "Vacuum leak near cylinder 1", system: "air_intake", confidence: "low", explanation: "A leaking intake gasket by one cylinder can lean out just that cylinder." },
-      { title: "Low compression in cylinder 1", system: "engine", confidence: "low", explanation: "A valve or ring problem in that cylinder; confirmed with a compression test." },
+      { title: "Low compression in cylinder 1", system: "engine", confidence: "low", explanation: "A valve or ring problem in that cylinder; confirmed with a compression test.", settlingTest: "Compare cylinder 1 compression with the other cylinders. A clearly lower reading confirms a mechanical problem in cylinder 1; an even reading rules low compression out." },
     ],
     steps: [
       { instruction: "With the engine off, swap the cylinder 1 ignition coil with a neighboring cylinder, clear the code, and drive to see if the misfire moves.", difficulty: "diy_moderate" },
@@ -79,10 +80,10 @@ export const DTC_KNOWLEDGE: Readonly<Record<string, DtcEntry>> = {
     headline: "Usually safe to drive short-term; get it diagnosed within a few weeks to avoid failing emissions.",
     safetyCritical: false,
     causes: [
-      { title: "Aging or failed catalytic converter", system: "emissions", confidence: "high", explanation: "The most common cause, especially past about 100,000 miles.", detail: "Before condemning the converter, scan for misfire or fuel-trim codes, check for exhaust leaks, and compare the upstream and downstream oxygen-sensor readings." },
+      { title: "Aging or failed catalytic converter", system: "emissions", confidence: "high", explanation: "The most common cause, especially past about 100,000 miles.", detail: "Before condemning the converter, scan for misfire or fuel-trim codes, check for exhaust leaks, and compare the upstream and downstream oxygen-sensor readings.", settlingTest: "Compare the upstream and downstream oxygen-sensor signals in live data with the engine warm. If the downstream signal mirrors the upstream signal, the converter is not storing oxygen effectively; a fairly steady downstream signal argues against a failed converter." },
       { title: "Faulty downstream or upstream oxygen sensor", system: "emissions", confidence: "medium", explanation: "A lazy O2 sensor can make a good converter look bad.", detail: "Compare both oxygen-sensor readings in live data. The downstream reading should stay fairly steady when the converter is working." },
-      { title: "Exhaust leak near the oxygen sensors", system: "exhaust", confidence: "medium", explanation: "Outside air entering the exhaust skews the sensor readings.", detail: "With the engine cold, check before and around the converter for ticking sounds or soot marks that point to a leak." },
-      { title: "Engine problem that damaged the converter (misfire or rich running)", system: "engine", confidence: "low", explanation: "Unburned fuel overheats the converter; fix the root cause before replacing it.", detail: "Scan for misfire and fuel-trim codes first. Those root-cause faults need attention before the converter is evaluated for replacement." },
+      { title: "Exhaust leak near the oxygen sensors", system: "exhaust", confidence: "medium", explanation: "Outside air entering the exhaust skews the sensor readings.", detail: "With the engine cold, check before and around the converter for ticking sounds or soot marks that point to a leak.", settlingTest: "Inspect the cold exhaust around the oxygen sensors and converter for soot marks and listen for ticking after startup. Soot or a localized tick supports a leak; neither finding makes a leak less likely." },
+      { title: "Engine problem that damaged the converter (misfire or rich running)", system: "engine", confidence: "low", explanation: "Unburned fuel overheats the converter; fix the root cause before replacing it.", detail: "Scan for misfire and fuel-trim codes first. Those root-cause faults need attention before the converter is evaluated for replacement.", settlingTest: "Scan for misfire and fuel-trim codes before evaluating the converter. Those codes support an engine-running problem as the root cause; their absence shifts the focus back to the converter, sensors, or an exhaust leak." },
     ],
     steps: [
       { instruction: "Scan for other codes; fix any misfire or fuel-trim codes first.", difficulty: "diy_moderate" },
@@ -101,7 +102,7 @@ export const DTC_KNOWLEDGE: Readonly<Record<string, DtcEntry>> = {
     code: "P0171", title: "System too lean (bank 1)", system: "fuel", drivability: "drive_with_caution",
     headline: "OK for short trips, but get it checked soon — running lean can cause misfires and engine damage.", safetyCritical: false,
     causes: [
-      { title: "Vacuum leak", system: "air_intake", confidence: "high", explanation: "Cracked hoses or intake leaks let in air the engine computer can't measure." },
+      { title: "Vacuum leak", system: "air_intake", confidence: "high", explanation: "Cracked hoses or intake leaks let in air the engine computer can't measure.", settlingTest: "Compare fuel trims at idle and at 2,500 rpm. High positive trims mainly at idle support a vacuum leak; trims that stay high at higher rpm point more toward fuel delivery or the MAF sensor." },
       { title: "Dirty or faulty mass airflow (MAF) sensor", system: "air_intake", confidence: "medium", explanation: "A contaminated MAF under-reads airflow, so too little fuel is added." },
       { title: "Weak fuel pump or clogged fuel filter", system: "fuel", confidence: "medium", explanation: "Low fuel pressure leans the mixture, usually worse under load." },
       { title: "Clogged fuel injectors", system: "fuel", confidence: "low", explanation: "Restricted injectors deliver less fuel than commanded." },
@@ -125,7 +126,7 @@ export const DTC_KNOWLEDGE: Readonly<Record<string, DtcEntry>> = {
     causes: [
       { title: "Failed secondary air pump", system: "emissions", confidence: "high", explanation: "Pumps often fail from moisture; you may hear it whine or not run at all on a cold start." },
       { title: "Stuck or failed air check (combination) valve", system: "emissions", confidence: "medium", explanation: "A stuck valve blocks airflow or lets exhaust back into the pump." },
-      { title: "Cracked or disconnected air hose", system: "emissions", confidence: "medium", explanation: "Leaking hoses reduce the measured flow." },
+      { title: "Cracked or disconnected air hose", system: "emissions", confidence: "medium", explanation: "Leaking hoses reduce the measured flow.", settlingTest: "With the engine off, inspect the secondary-air hoses end to end. A split or disconnected hose confirms the airflow loss; intact, secure hoses move the diagnosis toward the pump, valve, or power supply." },
       { title: "Blown fuse or failed relay for the air pump", system: "electrical", confidence: "medium", explanation: "If the pump never runs, check its power supply first." },
     ],
     steps: [
@@ -140,10 +141,10 @@ export const DTC_KNOWLEDGE: Readonly<Record<string, DtcEntry>> = {
     code: "P0128", title: "Coolant temperature below thermostat regulating temperature", system: "cooling", drivability: "ok_to_drive",
     headline: "Safe to drive; expect a weak heater and worse fuel economy until it's fixed.", safetyCritical: false,
     causes: [
-      { title: "Thermostat stuck open", system: "cooling", confidence: "high", explanation: "The engine warms up too slowly because coolant always flows through the radiator." },
+      { title: "Thermostat stuck open", system: "cooling", confidence: "high", explanation: "The engine warms up too slowly because coolant always flows through the radiator.", settlingTest: "Watch coolant temperature in live data during a 15-minute drive. A temperature that stays below normal supports a stuck-open thermostat; reaching normal and holding steady argues against it." },
       { title: "Faulty coolant temperature sensor", system: "cooling", confidence: "medium", explanation: "The sensor may report a lower temperature than the engine really is." },
-      { title: "Low coolant level", system: "cooling", confidence: "low", explanation: "Low coolant can give false low readings at the sensor." },
-      { title: "Cooling fan running all the time", system: "cooling", confidence: "low", explanation: "A stuck fan relay over-cools the engine." },
+      { title: "Low coolant level", system: "cooling", confidence: "low", explanation: "Low coolant can give false low readings at the sensor.", settlingTest: "With the engine fully cold, check the overflow-tank level. A level below the cold mark supports low coolant as a contributor; a correct level rules this cause out." },
+      { title: "Cooling fan running all the time", system: "cooling", confidence: "low", explanation: "A stuck fan relay over-cools the engine.", settlingTest: "Observe the cooling fan immediately after a cold start. A fan that runs right away supports a fan-control problem; a fan that stays off rules out constant fan operation." },
     ],
     steps: [
       { instruction: "With the engine cold, check the coolant level in the overflow tank. Never open the radiator cap when hot.", difficulty: "diy_easy" },
@@ -159,10 +160,10 @@ export const DTC_KNOWLEDGE: Readonly<Record<string, DtcEntry>> = {
     code: "P0455", title: "Evaporative emission (EVAP) system large leak detected", system: "emissions", drivability: "ok_to_drive",
     headline: "Safe to drive; start with the gas cap.", safetyCritical: false,
     causes: [
-      { title: "Loose, missing, or damaged gas cap", system: "fuel", confidence: "high", explanation: "The most common cause by far, especially right after refueling." },
-      { title: "Cracked or disconnected EVAP hose", system: "emissions", confidence: "medium", explanation: "Hoses near the tank and canister age and crack." },
+      { title: "Loose, missing, or damaged gas cap", system: "fuel", confidence: "high", explanation: "The most common cause by far, especially right after refueling.", settlingTest: "Inspect the cap seal, tighten the cap until it clicks, and monitor whether P0455 returns over the next several drive cycles. No return supports the cap as the leak; a returning code means the leak is elsewhere." },
+      { title: "Cracked or disconnected EVAP hose", system: "emissions", confidence: "medium", explanation: "Hoses near the tank and canister age and crack.", settlingTest: "Have the EVAP system smoke-tested while watching the hoses. Smoke escaping from a hose confirms the leak; no smoke at the hoses shifts attention to the cap, valves, or canister." },
       { title: "Faulty purge or vent valve", system: "emissions", confidence: "medium", explanation: "A valve stuck open creates a large leak." },
-      { title: "Leaking charcoal canister", system: "emissions", confidence: "low", explanation: "Less common, but the canister can crack." },
+      { title: "Leaking charcoal canister", system: "emissions", confidence: "low", explanation: "Less common, but the canister can crack.", settlingTest: "Have the EVAP system smoke-tested at the canister. Smoke escaping from the canister confirms it leaks; no smoke there rules the canister out as the large leak." },
     ],
     steps: [
       { instruction: "Check the gas cap is present and clicks tight; inspect its rubber seal for cracks.", difficulty: "diy_easy" },
@@ -179,8 +180,8 @@ export const DTC_KNOWLEDGE: Readonly<Record<string, DtcEntry>> = {
     code: "P0135", title: "Oxygen sensor heater circuit malfunction (bank 1, sensor 1)", system: "emissions", drivability: "ok_to_drive",
     headline: "Safe to drive; fuel economy and emissions may suffer until it's fixed.", safetyCritical: false,
     causes: [
-      { title: "Failed heater inside the upstream oxygen sensor", system: "emissions", confidence: "high", explanation: "The sensor's internal heater commonly burns out with age." },
-      { title: "Blown fuse for the O2 sensor heater", system: "electrical", confidence: "medium", explanation: "A shorted heater can blow the fuse." },
+      { title: "Failed heater inside the upstream oxygen sensor", system: "emissions", confidence: "high", explanation: "The sensor's internal heater commonly burns out with age.", settlingTest: "Measure heater resistance at the sensor connector with the engine cool. An open circuit or a reading far outside the vehicle's specification supports a failed heater; a normal reading of a few ohms shifts the fault to the fuse, wiring, or computer driver." },
+      { title: "Blown fuse for the O2 sensor heater", system: "electrical", confidence: "medium", explanation: "A shorted heater can blow the fuse.", settlingTest: "Check the oxygen-sensor heater fuse for continuity. A blown fuse confirms the heater circuit lost power; an intact fuse rules the fuse out and points to the sensor, wiring, or driver." },
       { title: "Damaged wiring or connector", system: "electrical", confidence: "medium", explanation: "Wires near the hot exhaust can melt or chafe." },
       { title: "Engine computer driver fault", system: "electrical", confidence: "low", explanation: "Rare; only after the sensor and wiring test good." },
     ],
@@ -195,9 +196,9 @@ export const DTC_KNOWLEDGE: Readonly<Record<string, DtcEntry>> = {
     code: "P0101", title: "Mass airflow (MAF) sensor range/performance problem", system: "air_intake", drivability: "drive_with_caution",
     headline: "Usually drivable, but hesitation or stalling is possible — get it checked soon.", safetyCritical: false,
     causes: [
-      { title: "Dirty MAF sensor", system: "air_intake", confidence: "high", explanation: "Dust or oil on the sensor wire skews readings." },
-      { title: "Air leak between the MAF and the throttle body", system: "air_intake", confidence: "medium", explanation: "A cracked intake boot lets in air the sensor doesn't measure." },
-      { title: "Clogged air filter", system: "air_intake", confidence: "medium", explanation: "Restricted airflow can push readings out of range." },
+      { title: "Dirty MAF sensor", system: "air_intake", confidence: "high", explanation: "Dust or oil on the sensor wire skews readings.", settlingTest: "Compare live MAF readings with the vehicle's specification before and after cleaning the sensor. Readings that return to specification support contamination; readings that stay out of range point to an air leak, wiring fault, or failing sensor." },
+      { title: "Air leak between the MAF and the throttle body", system: "air_intake", confidence: "medium", explanation: "A cracked intake boot lets in air the sensor doesn't measure.", settlingTest: "Inspect and flex the intake boot with the engine off. A visible crack or loose clamp confirms unmetered air can enter; an intact, tight boot rules this leak point out." },
+      { title: "Clogged air filter", system: "air_intake", confidence: "medium", explanation: "Restricted airflow can push readings out of range.", settlingTest: "Remove and inspect the air filter with the engine off. A filter packed with dirt supports an airflow restriction; a clean filter rules this cause out." },
       { title: "Failing MAF sensor", system: "air_intake", confidence: "medium", explanation: "If cleaning doesn't help, the sensor itself may be bad." },
       { title: "Damaged MAF wiring or connector", system: "electrical", confidence: "low", explanation: "Corroded or loose connectors cause erratic signals." },
     ],
@@ -217,7 +218,7 @@ export const DTC_KNOWLEDGE: Readonly<Record<string, DtcEntry>> = {
     code: "P0505", title: "Idle air control system malfunction", system: "air_intake", drivability: "drive_with_caution",
     headline: "Drivable, but the engine may stall at stops — be careful in traffic until it's fixed.", safetyCritical: false,
     causes: [
-      { title: "Dirty throttle body or idle air passage", system: "air_intake", confidence: "high", explanation: "Carbon buildup restricts idle airflow." },
+      { title: "Dirty throttle body or idle air passage", system: "air_intake", confidence: "high", explanation: "Carbon buildup restricts idle airflow.", settlingTest: "Inspect and clean the throttle body with the ignition off, then recheck the idle. An idle that becomes stable supports carbon buildup as the cause; no change points to a vacuum leak or an idle-control fault." },
       { title: "Vacuum leak", system: "air_intake", confidence: "medium", explanation: "Extra air makes the idle high or unstable." },
       { title: "Faulty idle air control valve (on vehicles that have one)", system: "air_intake", confidence: "medium", explanation: "Older vehicles use a separate valve that can stick." },
       { title: "Electronic throttle body fault", system: "electrical", confidence: "low", explanation: "On drive-by-wire vehicles the throttle motor controls idle." },

@@ -32,6 +32,7 @@ export function validModelOutput(): DiagnosisModelOutput {
         confidence: "high",
         explanation: "This is the most common cause of P0420 at higher mileage.",
         detail: "Verify the oxygen-sensor readings and check for exhaust leaks first.",
+        settlingTest: "Compare the upstream and downstream oxygen-sensor signals at warm idle. A downstream signal that mirrors the upstream supports a weak converter; a steady downstream signal argues against it.",
         relatedCodes: ["P0420"],
       },
     ],
