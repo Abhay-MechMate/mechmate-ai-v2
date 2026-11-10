@@ -40,6 +40,24 @@ describe("AI output validation", () => {
     expect(result?.codeNotes[0].code).toBe("P0420");
   });
 
+  it("keeps stop-driving warnings only for severe verdicts", () => {
+    const mild = validModelOutput();
+    mild.drivability.stopDrivingIf = ["A generic warning appears"];
+    expect(parseDiagnosisOutput(mild, ["P0420"])?.drivability.stopDrivingIf).toEqual([]);
+
+    const severe = validModelOutput();
+    severe.drivability = {
+      level: "do_not_drive",
+      headline: "Park it to prevent engine damage.",
+      stopDrivingIf: [
+        "If the oil-pressure light stays on, continuing to run the engine can destroy its bearings — shut it off.",
+      ],
+    };
+    expect(parseDiagnosisOutput(severe, ["P0420"])?.drivability.stopDrivingIf).toEqual(
+      severe.drivability.stopDrivingIf,
+    );
+  });
+
   it("forces safety flags for safety-critical cause systems", () => {
     const fixture = validModelOutput();
     fixture.likelyCauses[0].system = "brakes";

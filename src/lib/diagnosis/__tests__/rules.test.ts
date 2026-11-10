@@ -17,7 +17,18 @@ describe("rule diagnosis", () => {
     expect(result.likelyCauses[0].title).toBe("Aging or failed catalytic converter");
     expect(result.likelyCauses[0].detail).toContain("scan for misfire or fuel-trim codes");
     expect(result.drivability.level).toBe("ok_to_drive");
+    expect(result.drivability.stopDrivingIf).toEqual([]);
     expect(result.codeNotes).toContainEqual(expect.objectContaining({ code: "P0420" }));
+  });
+
+  it("leaves mild verdicts without a stop-driving list", () => {
+    const cautious = diagnoseWithRules({ dtcCodes: ["P0300"], symptoms: null }, vehicle);
+    const unknown = diagnoseWithRules({ dtcCodes: [], symptoms: null }, vehicle);
+
+    expect(cautious.drivability.level).toBe("drive_with_caution");
+    expect(cautious.drivability.stopDrivingIf).toEqual([]);
+    expect(unknown.drivability.level).toBe("drive_with_caution");
+    expect(unknown.drivability.stopDrivingIf).toEqual([]);
   });
 
   it("escalates a flashing light with a misfire", () => {
@@ -26,6 +37,9 @@ describe("rule diagnosis", () => {
       vehicle,
     );
     expect(["drive_to_shop_only", "do_not_drive"]).toContain(result.drivability.level);
+    expect(result.drivability.stopDrivingIf).toContain(
+      "If the check-engine light is flashing, raw fuel can overheat and destroy the catalytic converter — stop and park it.",
+    );
   });
 
   it("ranks misfire causes before catalyst causes", () => {

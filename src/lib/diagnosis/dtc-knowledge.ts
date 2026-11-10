@@ -19,7 +19,8 @@ export type DtcEntry = {
   stopDrivingIf: string[];
 };
 
-const FLASHING_CEL = "The check-engine light starts flashing";
+const FLASHING_CEL =
+  "If the check-engine light is flashing, raw fuel can overheat and destroy the catalytic converter — stop and park it.";
 
 export const DTC_KNOWLEDGE: Readonly<Record<string, DtcEntry>> = {
   P0300: {
@@ -42,7 +43,11 @@ export const DTC_KNOWLEDGE: Readonly<Record<string, DtcEntry>> = {
       { instruction: "Check short- and long-term fuel trims in live data; high positive trims point to a lean condition.", difficulty: "diy_moderate" },
     ],
     tools: ["OBD-II scanner with live data", "Spark plug socket and ratchet", "Flashlight"],
-    stopDrivingIf: [FLASHING_CEL, "The engine shakes hard or loses power", "You smell rotten eggs or fuel"],
+    stopDrivingIf: [
+      FLASHING_CEL,
+      "If the engine starts shaking hard or losing power, the misfire can overheat and destroy the catalytic converter — stop and park it.",
+      "If the exhaust smells like raw fuel or rotten eggs, unburned fuel may be overheating the converter and continued driving can melt it — stop and park it.",
+    ],
   },
   P0301: {
     code: "P0301", title: "Cylinder 1 misfire detected", system: "ignition",
@@ -63,7 +68,10 @@ export const DTC_KNOWLEDGE: Readonly<Record<string, DtcEntry>> = {
       { instruction: "If the misfire stays on cylinder 1, have a compression test done.", difficulty: "shop_recommended" },
     ],
     tools: ["OBD-II scanner", "Spark plug socket and ratchet", "Flashlight"],
-    stopDrivingIf: [FLASHING_CEL, "The engine shakes hard or loses power"],
+    stopDrivingIf: [
+      FLASHING_CEL,
+      "If the engine starts shaking hard or losing power, the misfire can overheat and destroy the catalytic converter — stop and park it.",
+    ],
   },
   P0420: {
     code: "P0420", title: "Catalytic converter efficiency below threshold (bank 1)", system: "emissions",
@@ -83,7 +91,11 @@ export const DTC_KNOWLEDGE: Readonly<Record<string, DtcEntry>> = {
       { instruction: "If sensors and exhaust check out, have the converter tested before replacing it.", difficulty: "shop_recommended" },
     ],
     tools: ["OBD-II scanner with live data", "Flashlight"],
-    stopDrivingIf: ["The check-engine light starts flashing", "You hear rattling from under the car or smell rotten eggs", "The engine loses power"],
+    stopDrivingIf: [
+      FLASHING_CEL,
+      "If the converter starts rattling or the exhaust smells like rotten eggs, its core may be breaking down and continued driving can melt or collapse it — stop and park it.",
+      "If engine power drops sharply, the converter may be blocking the exhaust and continued driving can overheat exhaust components — stop and park it.",
+    ],
   },
   P0171: {
     code: "P0171", title: "System too lean (bank 1)", system: "fuel", drivability: "drive_with_caution",
@@ -102,7 +114,10 @@ export const DTC_KNOWLEDGE: Readonly<Record<string, DtcEntry>> = {
       { instruction: "If trims stay high, have fuel pressure tested or a smoke test done.", difficulty: "shop_recommended" },
     ],
     tools: ["OBD-II scanner with live data", "MAF sensor cleaner", "Screwdriver set", "Flashlight"],
-    stopDrivingIf: ["The check-engine light starts flashing", "The engine stalls or hesitates badly"],
+    stopDrivingIf: [
+      FLASHING_CEL,
+      "If the engine starts stalling or hesitating badly, the lean condition can damage the engine and make acceleration unpredictable — stop and park it.",
+    ],
   },
   P0411: {
     code: "P0411", title: "Secondary air injection system incorrect flow detected", system: "emissions", drivability: "ok_to_drive",
@@ -119,7 +134,7 @@ export const DTC_KNOWLEDGE: Readonly<Record<string, DtcEntry>> = {
       { instruction: "With the engine off, inspect the air hoses for cracks or disconnections.", difficulty: "diy_easy" },
       { instruction: "Have the pump and check valve tested if power and hoses are fine.", difficulty: "shop_recommended" },
     ],
-    tools: ["OBD-II scanner", "Multimeter", "Flashlight"], stopDrivingIf: ["Other warning lights come on", "The engine runs rough"],
+    tools: ["OBD-II scanner", "Multimeter", "Flashlight"], stopDrivingIf: [],
   },
   P0128: {
     code: "P0128", title: "Coolant temperature below thermostat regulating temperature", system: "cooling", drivability: "ok_to_drive",
@@ -135,7 +150,10 @@ export const DTC_KNOWLEDGE: Readonly<Record<string, DtcEntry>> = {
       { instruction: "Watch the temperature gauge or coolant temperature in live data during a 15-minute drive; it should reach normal and stay steady.", difficulty: "diy_moderate" },
       { instruction: "Check whether the cooling fan runs immediately on a cold start (it normally shouldn't).", difficulty: "diy_easy" },
     ],
-    tools: ["OBD-II scanner with live data", "Flashlight"], stopDrivingIf: ["The temperature gauge goes into the red", "You see steam or smell coolant"],
+    tools: ["OBD-II scanner with live data", "Flashlight"], stopDrivingIf: [
+      "If the temperature gauge enters the red, continued driving can warp the cylinder head or destroy the engine — stop and let it cool.",
+      "If steam appears or coolant odor becomes strong, coolant may be escaping and continued driving can overheat the engine — stop and let it cool.",
+    ],
   },
   P0455: {
     code: "P0455", title: "Evaporative emission (EVAP) system large leak detected", system: "emissions", drivability: "ok_to_drive",
@@ -152,7 +170,10 @@ export const DTC_KNOWLEDGE: Readonly<Record<string, DtcEntry>> = {
       { instruction: "Look for cracked or disconnected hoses around the fuel tank and EVAP canister.", difficulty: "diy_easy" },
       { instruction: "If it returns, have a smoke test done to find the leak.", difficulty: "shop_recommended" },
     ],
-    tools: ["OBD-II scanner", "Flashlight"], stopDrivingIf: ["You smell strong fuel odor", "You see fuel dripping"],
+    tools: ["OBD-II scanner", "Flashlight"], stopDrivingIf: [
+      "If a strong fuel odor develops, fuel may be escaping and running or driving the car can ignite it — shut it off and park it.",
+      "If fuel is dripping, running or driving the car can ignite the leak and damage the vehicle — shut it off and park it.",
+    ],
   },
   P0135: {
     code: "P0135", title: "Oxygen sensor heater circuit malfunction (bank 1, sensor 1)", system: "emissions", drivability: "ok_to_drive",
@@ -168,7 +189,7 @@ export const DTC_KNOWLEDGE: Readonly<Record<string, DtcEntry>> = {
       { instruction: "With the engine cool, inspect the upstream O2 sensor wiring and connector for melting or corrosion.", difficulty: "diy_easy" },
       { instruction: "Measure the heater resistance at the sensor connector with a multimeter (typically a few ohms).", difficulty: "diy_moderate" },
     ],
-    tools: ["OBD-II scanner", "Multimeter", "Flashlight"], stopDrivingIf: ["The engine runs very rough or stalls"],
+    tools: ["OBD-II scanner", "Multimeter", "Flashlight"], stopDrivingIf: [],
   },
   P0101: {
     code: "P0101", title: "Mass airflow (MAF) sensor range/performance problem", system: "air_intake", drivability: "drive_with_caution",
@@ -187,7 +208,10 @@ export const DTC_KNOWLEDGE: Readonly<Record<string, DtcEntry>> = {
       { instruction: "Compare MAF readings at idle in live data against your vehicle's spec.", difficulty: "diy_moderate" },
     ],
     tools: ["OBD-II scanner with live data", "MAF sensor cleaner", "Screwdriver set", "Flashlight"],
-    stopDrivingIf: ["The engine stalls while driving", "The engine hesitates badly when accelerating into traffic"],
+    stopDrivingIf: [
+      "If the engine stalls while moving, steering and brake assist can drop and make the car harder to control — stop and park it.",
+      "If hesitation makes acceleration unpredictable, pulling into traffic becomes unsafe — stop and park it.",
+    ],
   },
   P0505: {
     code: "P0505", title: "Idle air control system malfunction", system: "air_intake", drivability: "drive_with_caution",
@@ -205,7 +229,10 @@ export const DTC_KNOWLEDGE: Readonly<Record<string, DtcEntry>> = {
       { instruction: "If idle is still unstable, have the idle control or throttle body tested.", difficulty: "shop_recommended" },
     ],
     tools: ["OBD-II scanner", "Throttle body cleaner", "Screwdriver set", "Flashlight"],
-    stopDrivingIf: ["The engine stalls while driving", "Power steering or brakes feel heavy after a stall"],
+    stopDrivingIf: [
+      "If the engine stalls while moving, steering and brake assist can drop and make the car harder to control — stop and park it.",
+      "If steering or brakes become heavy after a stall, the lost power assist makes continued driving unsafe — stop and park it.",
+    ],
   },
 };
 
@@ -230,7 +257,9 @@ export const SYMPTOM_RULES: readonly SymptomRule[] = [
     headline: "Stop driving — a fuel leak is a fire risk.",
     causes: [{ title: "Fuel leak from a line, injector seal, or the tank", confidence: "medium", explanation: "A raw fuel smell usually means fuel is escaping somewhere." }],
     steps: [{ instruction: "Park outdoors away from ignition sources and look under the car for drips or wet spots without starting it.", difficulty: "diy_easy" }],
-    tools: ["Flashlight"], stopDrivingIf: ["You smell fuel inside or around the car"], mechanicReason: "Fuel leaks are a fire hazard and need professional repair.",
+    tools: ["Flashlight"], stopDrivingIf: [
+      "If fuel odor persists inside or around the car, fuel is likely escaping and running or driving it can ignite the leak — leave it parked.",
+    ], mechanicReason: "Fuel leaks are a fire hazard and need professional repair.",
   },
   {
     id: "smoke_fire", pattern: /\b(smoke|smoking|burning smell|smells? (like )?burning|fire|flames?)\b/i,
@@ -238,7 +267,9 @@ export const SYMPTOM_RULES: readonly SymptomRule[] = [
     headline: "Stop driving — smoke or a burning smell can mean a fire risk.",
     causes: [{ title: "Fluid leaking onto hot engine or exhaust parts, or an electrical short", confidence: "low", explanation: "Smoke from the engine bay usually comes from oil, coolant, or wiring." }],
     steps: [{ instruction: "Turn the engine off, let it cool, and look for leaks or melted wiring without touching hot parts.", difficulty: "diy_easy" }],
-    tools: ["Flashlight"], stopDrivingIf: ["You see smoke or smell burning"], mechanicReason: "Smoke or burning smells can indicate a fire risk.",
+    tools: ["Flashlight"], stopDrivingIf: [
+      "If smoke or a burning odor continues with the engine running, leaked fluid or damaged wiring can ignite and damage the car — shut it off and park it.",
+    ], mechanicReason: "Smoke or burning smells can indicate a fire risk.",
   },
   {
     id: "overheating", pattern: /\b(overheat\w*|over[- ]heat\w*|temp(erature)? (gauge|light) (is )?(high|in the red|red)|steam(ing)?|boiling coolant)\b/i,
@@ -249,7 +280,10 @@ export const SYMPTOM_RULES: readonly SymptomRule[] = [
       { title: "Stuck-closed thermostat, failed water pump, or cooling fan problem", confidence: "medium", explanation: "Any of these stops coolant flow or airflow." },
     ],
     steps: [{ instruction: "Let the engine cool completely, then check the coolant level in the overflow tank. Never open the radiator cap when hot.", difficulty: "diy_easy" }],
-    tools: ["Flashlight"], stopDrivingIf: ["The temperature gauge is in the red", "You see steam"], mechanicReason: "Overheating needs diagnosis before further driving to avoid engine damage.",
+    tools: ["Flashlight"], stopDrivingIf: [
+      "If the temperature gauge enters the red, continued driving can warp the cylinder head or destroy the engine — stop and let it cool.",
+      "If steam appears, coolant is escaping or boiling and continued driving can destroy the engine — stop and let it cool.",
+    ], mechanicReason: "Overheating needs diagnosis before further driving to avoid engine damage.",
   },
   {
     id: "oil_pressure", pattern: /\b(oil (pressure )?(light|warning)|low oil pressure)\b/i,
@@ -257,7 +291,9 @@ export const SYMPTOM_RULES: readonly SymptomRule[] = [
     headline: "Stop driving — low oil pressure can destroy the engine.",
     causes: [{ title: "Low oil level or oil pump/sensor problem", confidence: "medium", explanation: "The light means the engine may not be getting enough oil." }],
     steps: [{ instruction: "Turn the engine off, wait 5 minutes on level ground, and check the oil level on the dipstick.", difficulty: "diy_easy" }],
-    tools: ["Rag or paper towel"], stopDrivingIf: ["The oil pressure light is on"], mechanicReason: "An oil pressure warning needs inspection before driving.",
+    tools: ["Rag or paper towel"], stopDrivingIf: [
+      "If the oil-pressure light stays on, continuing to run the engine without oil pressure can destroy its bearings — shut it off immediately.",
+    ], mechanicReason: "An oil pressure warning needs inspection before driving.",
   },
   {
     id: "brakes", pattern: /\b(brakes?|braking|brake pedal|pedal (goes|sinks) to the floor|brake light)\b/i,
@@ -268,7 +304,11 @@ export const SYMPTOM_RULES: readonly SymptomRule[] = [
       { title: "Low brake fluid or a leak", confidence: "low", explanation: "A soft or sinking pedal can mean fluid is low or leaking." },
     ],
     steps: [{ instruction: "With the engine off, check the brake fluid level in the reservoir and look for wet spots near each wheel.", difficulty: "diy_easy" }],
-    tools: ["Flashlight"], stopDrivingIf: ["The brake pedal feels soft or sinks", "The brake warning light is on", "You hear metal-on-metal grinding"], mechanicReason: "Brakes are safety-critical and should be inspected by a mechanic.",
+    tools: ["Flashlight"], stopDrivingIf: [
+      "If the brake pedal feels soft or sinks, continued driving risks losing hydraulic braking — stop and have the car towed.",
+      "If the brake warning light is on with low fluid, a hydraulic leak can lead to brake failure — stop and have the car towed.",
+      "If braking is metal-on-metal, continued driving can destroy the rotors and reduce stopping ability — stop and have the car towed.",
+    ], mechanicReason: "Brakes are safety-critical and should be inspected by a mechanic.",
   },
   {
     id: "steering_suspension", pattern: /\b(steering|pulls? (hard )?to (the )?(left|right)|wheel (wobble|wobbles|shakes?)|clunk(s|ing)?|wandering)\b/i,
@@ -276,7 +316,10 @@ export const SYMPTOM_RULES: readonly SymptomRule[] = [
     headline: "Steering or suspension issues can affect control — drive only to a shop.",
     causes: [{ title: "Worn steering or suspension parts (tie rods, ball joints, bushings)", confidence: "low", explanation: "Clunks, wandering, or pulling often come from worn joints or alignment problems." }],
     steps: [{ instruction: "Note when it happens (turning, bumps, braking, speed) and check tire pressures.", difficulty: "diy_easy" }],
-    tools: ["Tire pressure gauge"], stopDrivingIf: ["Steering feels loose or very heavy", "The car wanders or a wheel wobbles"], mechanicReason: "Steering and suspension are safety-critical.",
+    tools: ["Tire pressure gauge"], stopDrivingIf: [
+      "If steering becomes loose or very heavy, continued driving risks losing directional control — stop and have the car towed.",
+      "If the car wanders or a wheel wobbles, a steering, suspension, or wheel part may separate and cause loss of control — stop and have it towed.",
+    ], mechanicReason: "Steering and suspension are safety-critical.",
   },
   {
     id: "tires", pattern: /\b(flat tire|tire (bulge|bubble|blowout)|losing air|cords? showing)\b/i,
@@ -284,7 +327,9 @@ export const SYMPTOM_RULES: readonly SymptomRule[] = [
     headline: "A damaged tire can fail suddenly — use the spare or drive only to a tire shop.",
     causes: [{ title: "Tire damage or puncture", confidence: "medium", explanation: "Bulges and air loss mean the tire's structure or seal is damaged." }],
     steps: [{ instruction: "Check the tire pressure and look for nails, bulges, or exposed cords.", difficulty: "diy_easy" }],
-    tools: ["Tire pressure gauge", "Flashlight"], stopDrivingIf: ["The tire is visibly flat or bulging"], mechanicReason: "Damaged tires should be inspected by a tire shop.",
+    tools: ["Tire pressure gauge", "Flashlight"], stopDrivingIf: [
+      "If the tire is flat, bulging, or showing cords, continued driving can make it fail and damage the wheel or cause loss of control — use the spare or tow it.",
+    ], mechanicReason: "Damaged tires should be inspected by a tire shop.",
   },
   {
     id: "flashing_cel", pattern: /\b(flashing|blinking)\b[^.]*\b(check engine|engine light|cel|mil)\b|\b(check engine|engine light|cel|mil)\b[^.]*\b(flashing|blinking)\b/i,
@@ -292,7 +337,7 @@ export const SYMPTOM_RULES: readonly SymptomRule[] = [
     headline: "A flashing check-engine light means an active misfire — avoid driving except gently to a shop.",
     causes: [{ title: "Severe engine misfire", confidence: "medium", explanation: "A flashing light means misfires bad enough to damage the catalytic converter." }],
     steps: [{ instruction: "Scan for misfire codes (P0300–P0308) before driving further.", difficulty: "diy_moderate" }],
-    tools: ["OBD-II scanner"], stopDrivingIf: ["The check-engine light is flashing"], mechanicReason: null,
+    tools: ["OBD-II scanner"], stopDrivingIf: [FLASHING_CEL], mechanicReason: null,
   },
   {
     id: "airbag", pattern: /\b(airbag|air bag|srs)\b/i,
@@ -308,7 +353,9 @@ export const SYMPTOM_RULES: readonly SymptomRule[] = [
     headline: "Hybrid/EV high-voltage faults need a qualified technician.",
     causes: [{ title: "High-voltage battery or hybrid system fault", confidence: "low", explanation: "These systems carry lethal voltage." }],
     steps: [{ instruction: "Note the warning messages shown. Do not touch orange high-voltage cables or components.", difficulty: "diy_easy" }],
-    tools: [], stopDrivingIf: ["The car shows a hybrid/EV system warning and loses power"], mechanicReason: "High-voltage systems are dangerous to work on without training.",
+    tools: [], stopDrivingIf: [
+      "If a hybrid/EV warning is joined by power loss, continued driving can leave the car without propulsion — stop and have it towed.",
+    ], mechanicReason: "High-voltage systems are dangerous to work on without training.",
   },
 ];
 

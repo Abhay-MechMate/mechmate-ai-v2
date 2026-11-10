@@ -167,6 +167,7 @@ export default async function DiagnosisReportPage({
 
         {result.round > 0 ? (
           <Link
+            id="assistant-update"
             href={`/diagnose/${id}/assistant`}
             className="mt-3 flex flex-wrap items-center gap-x-2 text-sm text-emerald-300 transition-colors hover:text-emerald-200"
           >

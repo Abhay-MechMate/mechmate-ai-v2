@@ -31,6 +31,15 @@ function dedupeStrings(values: string[], limit = Number.POSITIVE_INFINITY): stri
   });
 }
 
+function stopWarningsForLevel(
+  level: DrivabilityLevel,
+  warnings: string[],
+): string[] {
+  return level === "drive_to_shop_only" || level === "do_not_drive"
+    ? dedupeStrings(warnings, 4)
+    : [];
+}
+
 function dedupeSteps(steps: InspectionStep[]): InspectionStep[] {
   const seen = new Set<string>();
   return steps.filter((step) => {
@@ -158,19 +167,13 @@ export function diagnoseWithRules(
       ? "We can't tell how serious this is from the code alone — drive gently until it's checked."
       : "We can't tell how serious this is yet — drive gently and get it checked soon.");
 
-  const stopDrivingIf = dedupeStrings(
+  const stopDrivingIf = stopWarningsForLevel(
+    drivabilityLevel,
     [
       ...symptomRules.flatMap((rule) => rule.stopDrivingIf),
       ...knownCodes.flatMap((code) => DTC_KNOWLEDGE[code].stopDrivingIf),
     ],
-    5,
   );
-  if (stopDrivingIf.length === 0) {
-    stopDrivingIf.push(
-      "A warning light starts flashing or turns red",
-      "The car drives, brakes, or steers differently than normal",
-    );
-  }
 
   const unknownInfo = unknownCodes.map(describeUnknownCode);
   const safetyCritical =
@@ -267,18 +270,21 @@ export function applySafetyFloor(
     DRIVABILITY_LEVELS.indexOf(rules.drivability.level) >
     DRIVABILITY_LEVELS.indexOf(ai.drivability.level);
   const level = moreSevere(ai.drivability.level, rules.drivability.level);
+  const stopDrivingIf = stopWarningsForLevel(
+    level,
+    rulesWon
+      ? [...rules.drivability.stopDrivingIf, ...ai.drivability.stopDrivingIf]
+      : ai.drivability.stopDrivingIf,
+  );
   return {
     ...ai,
     drivability: rulesWon
       ? {
           level,
           headline: rules.drivability.headline,
-          stopDrivingIf: dedupeStrings(
-            [...rules.drivability.stopDrivingIf, ...ai.drivability.stopDrivingIf],
-            5,
-          ),
+          stopDrivingIf,
         }
-      : { ...ai.drivability },
+      : { ...ai.drivability, stopDrivingIf },
     safetyCritical: ai.safetyCritical || rules.safetyCritical,
     seeMechanic: {
       recommended: ai.seeMechanic.recommended || rules.seeMechanic.recommended,

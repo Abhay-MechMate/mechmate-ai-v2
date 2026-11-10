@@ -237,7 +237,11 @@ export async function submitAnswersAction(
     if (write.error === "conflict") return { error: CONFLICT, values };
     return { error: "The assistant update couldn't be saved. Reload and try again.", values };
   }
-  redirect(`/diagnose/${sessionId}/assistant#update-${round}`);
+  redirect(
+    outcome.ok
+      ? `/diagnose/${sessionId}#assistant-update`
+      : `/diagnose/${sessionId}/assistant#update-${round}`,
+  );
 }
 
 export async function finishAssistantAction(formData: FormData): Promise<void> {

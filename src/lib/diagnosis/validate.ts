@@ -155,6 +155,10 @@ export function parseDiagnosisOutput(
   const reason = recommended
     ? suppliedReason || "This involves a system that should be inspected by a qualified mechanic."
     : null;
+  const stopDrivingIf =
+    drivability.level === "drive_to_shop_only" || drivability.level === "do_not_drive"
+      ? drivability.stopDrivingIf.map((item) => item.trim()).filter(Boolean).slice(0, 4)
+      : [];
 
   return {
     schemaVersion: DIAGNOSIS_SCHEMA_VERSION,
@@ -163,7 +167,7 @@ export function parseDiagnosisOutput(
     drivability: {
       level: drivability.level,
       headline: (drivability.headline as string).trim(),
-      stopDrivingIf: drivability.stopDrivingIf.map((item) => item.trim()).slice(0, 5),
+      stopDrivingIf,
     },
     safetyCritical,
     seeMechanic: { recommended, reason },

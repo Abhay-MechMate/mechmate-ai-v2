@@ -21,7 +21,7 @@ export function validModelOutput(): DiagnosisModelOutput {
     drivability: {
       level: "ok_to_drive",
       headline: "Safe to drive short-term; arrange a diagnosis soon.",
-      stopDrivingIf: ["The check-engine light starts flashing"],
+      stopDrivingIf: [],
     },
     safetyCritical: false,
     seeMechanic: { recommended: false, reason: null },
