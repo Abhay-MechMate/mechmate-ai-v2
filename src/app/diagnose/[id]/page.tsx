@@ -6,6 +6,7 @@ import { getSession } from "@/app/diagnose/data";
 import {
   assistantUnavailableReason,
   CONFIDENCE_DISPLAY,
+  diagnosisTrail,
   DRIVABILITY_DISPLAY,
   fallbackReasonLabel,
   formatSessionDate,
@@ -14,7 +15,10 @@ import {
 } from "@/app/diagnose/display";
 import { FirstChecks, type EntryState } from "@/app/diagnose/[id]/first-checks";
 import { DiffChips } from "@/app/diagnose/[id]/assistant/turn-views";
-import { SiteHeader } from "@/components/site-header";
+import { Alert, Badge } from "@/components/badge";
+import { Breadcrumbs } from "@/components/breadcrumbs";
+import { TONE_CLASSES } from "@/components/tone";
+import { signInPath } from "@/lib/auth/routing";
 import {
   MAX_TURNS_PER_SESSION,
   assistantDailyLimit,
@@ -22,7 +26,7 @@ import {
 import { deriveConversation } from "@/lib/diagnosis/conversation";
 import { diffResults } from "@/lib/diagnosis/diff";
 import { isAiConfigured } from "@/lib/diagnosis/openrouter";
-import { createClient } from "@/lib/supabase/server";
+import { getAuthContext } from "@/lib/supabase/auth-context";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 
@@ -36,14 +40,9 @@ export const maxDuration = 60;
 export default async function DiagnosisReportPage({
   params,
 }: DiagnosisReportPageProps) {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) redirect("/signin");
-
   const { id } = await params;
+  const { supabase, user } = await getAuthContext();
+  if (!user) redirect(signInPath(`/diagnose/${id}`));
   const session = await getSession(supabase, id);
   if (!session) notFound();
 
@@ -99,29 +98,28 @@ export default async function DiagnosisReportPage({
     : "/diagnose/new";
 
   return (
-    <>
-      <SiteHeader />
-      <main className="min-h-screen bg-zinc-950 px-6 py-10 text-zinc-100">
         <div className="mx-auto max-w-3xl">
-        <Link
-          href="/diagnose"
-          className="text-sm font-medium text-zinc-400 transition-colors hover:text-emerald-400"
-        >
-          ← All diagnoses
-        </Link>
+        <Breadcrumbs
+          items={diagnosisTrail(
+            id,
+            vehicleSnapshot,
+            session.createdAt,
+            "report",
+          )}
+        />
 
-        <header className="mt-6">
+        <header>
           <h1 className="text-3xl font-bold tracking-tight">
             {vehicleLabel(vehicleSnapshot)}
           </h1>
-          <p className="mt-2 text-zinc-400">{vehicleDetail(vehicleSnapshot)}</p>
-          <p className="mt-1 text-sm text-zinc-500">
+          <p className="mt-2 text-fg-secondary">{vehicleDetail(vehicleSnapshot)}</p>
+          <p className="mt-1 text-sm text-fg-muted">
             {formatSessionDate(session.createdAt)}
           </p>
         </header>
 
-        <section className="mt-8 rounded-xl border border-zinc-800 bg-zinc-900 p-5">
-          <h2 className="text-sm font-semibold uppercase tracking-wider text-zinc-400">
+        <section className="mt-8 rounded-xl border border-line bg-surface p-5">
+          <h2 className="text-sm font-semibold uppercase tracking-wider text-fg-secondary">
             Your input
           </h2>
           {session.dtcCodes.length > 0 ? (
@@ -129,7 +127,7 @@ export default async function DiagnosisReportPage({
               {session.dtcCodes.map((code) => (
                 <span
                   key={code}
-                  className="rounded-md bg-zinc-950 px-2.5 py-1 font-mono text-sm text-emerald-300"
+                  className="rounded-md bg-canvas px-2.5 py-1 font-mono text-sm text-fg"
                 >
                   {code}
                 </span>
@@ -137,7 +135,7 @@ export default async function DiagnosisReportPage({
             </div>
           ) : null}
           {session.symptoms ? (
-            <blockquote className="mt-4 border-l-2 border-zinc-700 pl-4 text-sm leading-relaxed whitespace-pre-wrap text-zinc-300">
+            <blockquote className="mt-4 border-l-2 border-line pl-4 text-sm leading-relaxed whitespace-pre-wrap text-fg-secondary">
               {session.symptoms}
             </blockquote>
           ) : null}
@@ -145,41 +143,36 @@ export default async function DiagnosisReportPage({
 
         {session.resultSource === "ai" ? (
           <div className="mt-4">
-            <span
-              title={session.model ?? undefined}
-              className="inline-flex rounded-full border border-zinc-700 bg-zinc-900 px-2.5 py-1 text-xs text-zinc-300"
-            >
-              AI analysis
-            </span>
+            <Badge>AI analysis</Badge>
           </div>
         ) : (
-          <p className="mt-4 rounded-lg border border-amber-900/70 bg-amber-950/40 px-4 py-3 text-sm leading-relaxed text-amber-200">
+          <Alert tone="caution" className="mt-4 px-4 py-3 leading-relaxed">
             {session.fallbackReason === "daily_limit"
               ? "You've reached today's AI analysis limit, so this report uses MechMate's built-in guide."
               : "AI analysis was unavailable, so this report uses MechMate's built-in guide. It's more general than an AI analysis."}
             {result.round > 0 ? (
-              <span className="mt-2 block text-amber-300">
+              <span className="mt-2 block text-caution-fg">
                 Since refined by AI from your answers.
               </span>
             ) : null}
-          </p>
+          </Alert>
         )}
 
         {result.round > 0 ? (
           <Link
             id="assistant-update"
             href={`/diagnose/${id}/assistant`}
-            className="mt-3 flex flex-wrap items-center gap-x-2 text-sm text-emerald-300 transition-colors hover:text-emerald-200"
+            className="mt-3 flex flex-wrap items-center gap-x-2 text-sm text-accent transition-colors hover:text-accent-hover"
           >
             <span>Refined with the assistant</span>
-            <span className="text-zinc-600">·</span>
+            <span className="text-fg-muted">·</span>
             <span>round {result.round} of 3</span>
             <span>· View the conversation →</span>
           </Link>
         ) : null}
 
         <section
-          className={`mt-6 rounded-lg border px-4 py-3 ${drivability.className}`}
+          className={`mt-6 rounded-lg border px-4 py-3 ${TONE_CLASSES[drivability.tone]}`}
         >
           <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
             <h2 className="text-sm font-semibold">{drivability.label}</h2>
@@ -199,20 +192,20 @@ export default async function DiagnosisReportPage({
           ) : null}
         </section>
 
-        <section className="mt-6 rounded-xl border border-zinc-800 bg-zinc-900 p-6">
+        <section className="mt-6 rounded-xl border border-line bg-surface p-6">
           <h2 className="text-xl font-semibold">What this points to</h2>
-          <p className="mt-3 leading-relaxed text-zinc-300">{result.summary}</p>
+          <p className="mt-3 leading-relaxed text-fg-secondary">{result.summary}</p>
         </section>
 
-        <section className="mt-6 rounded-xl border border-zinc-800 bg-zinc-900 p-6">
+        <section className="mt-6 rounded-xl border border-line bg-surface p-6">
           <h2 className="text-xl font-semibold">Likely causes</h2>
-          <p className="mt-2 text-sm leading-relaxed text-zinc-400">
+          <p className="mt-2 text-sm leading-relaxed text-fg-secondary">
             A stored code points to a system to check, not a failed part. Confirm
             with the test under each cause before buying anything — replacing
             parts to see if they fix it is how repair bills balloon.
           </p>
           {result.likelyCauses.length === 0 ? (
-            <p className="mt-3 text-sm leading-relaxed text-zinc-400">
+            <p className="mt-3 text-sm leading-relaxed text-fg-secondary">
               Not enough information to rank causes. Try adding a trouble code
               or more detail about when it happens.
             </p>
@@ -227,42 +220,40 @@ export default async function DiagnosisReportPage({
                 return (
                   <li
                     key={`${cause.title}:${index}`}
-                    className="border-t border-zinc-800 pt-5 first:border-0 first:pt-0"
+                    className="border-t border-line pt-5 first:border-0 first:pt-0"
                   >
                     <div className="flex items-start gap-3">
-                      <span className="flex size-7 shrink-0 items-center justify-center rounded-full bg-emerald-500 text-sm font-bold text-emerald-950">
+                      <span className="flex size-7 shrink-0 items-center justify-center rounded-full border border-line-strong bg-surface-raised text-sm font-bold text-fg">
                         {index + 1}
                       </span>
                       <div className="min-w-0 flex-1">
-                        <h3 className="font-semibold text-white">{cause.title}</h3>
+                        <h3 className="font-semibold text-fg">{cause.title}</h3>
                         <div className="mt-2 flex flex-wrap items-center gap-2">
-                          <span
-                            className={`rounded-full border px-2 py-0.5 text-xs ${confidence.className}`}
-                          >
+                          <Badge tone={confidence.tone}>
                             {confidence.label}
-                          </span>
-                          <span className="text-xs text-zinc-500">
+                          </Badge>
+                          <span className="text-xs text-fg-muted">
                             {systemLabel}
                           </span>
                         </div>
-                        <p className="mt-3 text-sm leading-relaxed text-zinc-400">
+                        <p className="mt-3 text-sm leading-relaxed text-fg-secondary">
                           {cause.explanation}
                         </p>
                         {cause.detail ? (
-                          <p className="mt-3 rounded-lg border border-zinc-800 bg-zinc-950/60 px-3 py-2 text-sm leading-relaxed text-zinc-400">
+                          <p className="mt-3 rounded-lg border border-line bg-canvas px-3 py-2 text-sm leading-relaxed text-fg-secondary">
                             {cause.detail}
                           </p>
                         ) : null}
                         {cause.settlingTest ? (
-                          <div className="mt-3 rounded-lg border border-emerald-900/60 bg-emerald-950/20 px-3 py-2 text-sm leading-relaxed text-emerald-100/90">
-                            <p className="text-xs font-semibold uppercase tracking-wide text-emerald-400">
+                          <div className="mt-3 rounded-lg border-l-2 border-accent bg-canvas px-3 py-2 text-sm leading-relaxed text-fg-secondary">
+                            <p className="text-xs font-semibold uppercase tracking-wide text-fg">
                               The test that settles it:
                             </p>
                             <p className="mt-1">{cause.settlingTest}</p>
                           </div>
                         ) : null}
                         {cause.relatedCodes.length > 0 ? (
-                          <p className="mt-2 font-mono text-xs text-zinc-500">
+                          <p className="mt-2 font-mono text-xs text-fg-muted">
                             {cause.relatedCodes.join(", ")}
                           </p>
                         ) : null}
@@ -276,18 +267,18 @@ export default async function DiagnosisReportPage({
         </section>
 
         {result.ruledOut.length > 0 ? (
-          <section className="mt-6 rounded-xl border border-zinc-800 bg-zinc-900 p-6">
+          <section className="mt-6 rounded-xl border border-line bg-surface p-6">
             <h2 className="text-xl font-semibold">Ruled out</h2>
             <ul className="mt-4 space-y-4">
               {result.ruledOut.map((cause) => (
                 <li
                   key={cause.title}
-                  className="border-t border-zinc-800 pt-4 first:border-0 first:pt-0"
+                  className="border-t border-line pt-4 first:border-0 first:pt-0"
                 >
-                  <h3 className="text-sm font-medium text-zinc-400 line-through">
+                  <h3 className="text-sm font-medium text-fg-muted line-through">
                     {cause.title}
                   </h3>
-                  <p className="mt-1 text-sm leading-relaxed text-zinc-500">
+                  <p className="mt-1 text-sm leading-relaxed text-fg-muted">
                     {cause.reason}
                   </p>
                 </li>
@@ -298,7 +289,7 @@ export default async function DiagnosisReportPage({
 
         <section
           id="first-checks"
-          className="mt-6 scroll-mt-24 rounded-xl border border-zinc-800 bg-zinc-900 p-6"
+          className="mt-6 scroll-mt-20 rounded-xl border border-line bg-surface p-6"
         >
           <h2 className="text-xl font-semibold">First checks</h2>
           <FirstChecks
@@ -310,9 +301,9 @@ export default async function DiagnosisReportPage({
         </section>
 
         {result.toolsNeeded.length > 0 ? (
-          <section className="mt-6 rounded-xl border border-zinc-800 bg-zinc-900 p-6">
+          <section className="mt-6 rounded-xl border border-line bg-surface p-6">
             <h2 className="text-xl font-semibold">Tools needed</h2>
-            <ul className="mt-4 list-disc space-y-2 pl-5 text-sm text-zinc-300">
+            <ul className="mt-4 list-disc space-y-2 pl-5 text-sm text-fg-secondary">
               {result.toolsNeeded.map((tool) => (
                 <li key={tool}>{tool}</li>
               ))}
@@ -321,15 +312,15 @@ export default async function DiagnosisReportPage({
         ) : null}
 
         {result.codeNotes.length > 0 ? (
-          <section className="mt-6 rounded-xl border border-zinc-800 bg-zinc-900 p-6">
+          <section className="mt-6 rounded-xl border border-line bg-surface p-6">
             <h2 className="text-xl font-semibold">Code meanings</h2>
             <dl className="mt-4 space-y-4">
               {result.codeNotes.map((note) => (
                 <div key={note.code}>
-                  <dt className="font-mono text-sm font-semibold text-emerald-300">
+                  <dt className="font-mono text-sm font-semibold text-fg">
                     {note.code}
                   </dt>
-                  <dd className="mt-1 text-sm leading-relaxed text-zinc-400">
+                  <dd className="mt-1 text-sm leading-relaxed text-fg-secondary">
                     {note.meaning}
                     {note.manufacturerSpecific
                       ? " (varies by manufacturer)"
@@ -342,8 +333,8 @@ export default async function DiagnosisReportPage({
         ) : null}
 
         {result.round > 0 ? (
-          <details className="mt-6 rounded-xl border border-zinc-800 bg-zinc-900 p-6">
-            <summary className="cursor-pointer text-base font-semibold text-zinc-200">
+          <details className="mt-6 rounded-xl border border-line bg-surface p-6">
+            <summary className="cursor-pointer text-base font-semibold text-fg">
               What changed since the first pass
             </summary>
             <div className="mt-4">
@@ -352,27 +343,27 @@ export default async function DiagnosisReportPage({
           </details>
         ) : null}
 
-        <footer className="mt-8 border-t border-zinc-800 pt-6">
+        <footer className="mt-8 border-t border-line pt-6">
           {result.seeMechanic.recommended && result.seeMechanic.reason ? (
-            <p className="text-xs leading-relaxed text-zinc-500">
+            <p className="text-xs leading-relaxed text-fg-muted">
               Some of this repair is best done by a shop:{" "}
               {result.seeMechanic.reason}
             </p>
           ) : null}
-          <p className="mt-3 text-xs text-zinc-500">
+          <p className="mt-3 text-xs text-fg-muted">
             Source:{" "}
             {session.resultSource === "ai"
               ? `AI${session.model ? ` · ${session.model}` : ""}`
               : `MechMate built-in rules · ${fallbackReasonLabel(session.fallbackReason)}`}
           </p>
           {result.round > 0 ? (
-            <p className="mt-1 text-xs text-zinc-500">
+            <p className="mt-1 text-xs text-fg-muted">
               Updated by the assistant: AI
               {latestUpdate?.model ? ` · ${latestUpdate.model}` : ""} · round{" "}
               {result.round}
             </p>
           ) : null}
-          <p className="mt-3 text-xs leading-relaxed text-zinc-500">
+          <p className="mt-3 text-xs leading-relaxed text-fg-muted">
             MechMate&apos;s guidance is informational and may be wrong. Confirm
             the cause before buying parts, and see a qualified mechanic for
             anything involving brakes, steering, airbags, fuel leaks, or
@@ -380,13 +371,11 @@ export default async function DiagnosisReportPage({
           </p>
           <Link
             href={startAgainHref}
-            className="mt-6 inline-flex rounded-lg bg-emerald-500 px-4 py-2.5 text-sm font-medium text-emerald-950 transition-colors hover:bg-emerald-400"
+            className="mt-6 inline-flex rounded-lg bg-accent px-4 py-2.5 text-sm font-medium text-on-accent transition-colors hover:bg-accent-hover"
           >
             Start another diagnosis
           </Link>
         </footer>
         </div>
-      </main>
-    </>
   );
 }

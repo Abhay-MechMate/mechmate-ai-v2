@@ -14,6 +14,8 @@ Nothing here is scheduled — that's the point. When a phase opens, we pull from
 - Lock `diagnostic_sessions.result` writes to RPC-only before any sharing feature
 - Backport 'floor replaces steps at ≥ drive_to_shop_only' to the first-pass engine
 - Fix SYSTEM_PROMPT tail ('non-mechanic') to match the DIY voice
+- Pre-signup diagnosis: let visitors run one diagnosis before creating an account; attach to the account when they join (parked Nov 10, 2026 — owner liked it, deferred)
+- Light-mode theme toggle (dark is the only theme for now; research says offer a choice eventually)
 - (add more as they come — just ask)
 
 ## Rules

@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
+import { SIGNED_IN_HOME } from "@/lib/auth/routing";
 import { NextResponse } from "next/server";
 
 export async function GET(request: Request) {
@@ -10,5 +11,5 @@ export async function GET(request: Request) {
     await supabase.auth.exchangeCodeForSession(code);
   }
 
-  return NextResponse.redirect(new URL("/", requestUrl.origin));
+  return NextResponse.redirect(new URL(SIGNED_IN_HOME, requestUrl.origin));
 }

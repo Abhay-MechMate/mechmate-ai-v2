@@ -11,7 +11,7 @@ import type {
 import { useActionState, useState } from "react";
 
 const inputClassName =
-  "mt-2 w-full rounded-lg border border-zinc-700 bg-zinc-950 px-3 py-2.5 text-zinc-100 outline-none transition placeholder:text-zinc-600 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 disabled:cursor-not-allowed disabled:opacity-60";
+  "mt-2 w-full rounded-lg border border-line-strong bg-canvas px-3 py-2.5 text-fg transition placeholder:text-fg-muted focus-visible:border-accent disabled:cursor-not-allowed disabled:border-line disabled:bg-surface disabled:text-fg-muted";
 
 export function AnswerForm({
   sessionId,
@@ -53,7 +53,7 @@ export function AnswerForm({
       <button
         type="button"
         onClick={() => setEditing(true)}
-        className="mt-3 text-xs font-medium text-zinc-400 underline decoration-zinc-700 underline-offset-4 transition-colors hover:text-emerald-300"
+        className="mt-3 text-xs font-medium text-fg-secondary underline decoration-line-strong underline-offset-4 transition-colors hover:text-accent-hover"
       >
         Change my answers
       </button>
@@ -84,19 +84,19 @@ export function AnswerForm({
       <input type="hidden" name="mode" value={mode} />
 
       {mode !== "retry" ? (
-        <fieldset disabled={pending} className="space-y-6 disabled:opacity-70">
+        <fieldset disabled={pending} className="space-y-6">
           {mode === "edit" && warning ? (
-            <p className="rounded-lg border border-amber-900/70 bg-amber-950/40 px-3 py-2 text-xs text-amber-200">
+            <p className="rounded-lg border border-caution-line bg-caution-bg px-3 py-2 text-xs text-caution-fg">
               {warning}
             </p>
           ) : null}
 
           {questions.map((question, index) => (
             <div key={question.id}>
-              <p className="text-sm font-medium leading-relaxed text-zinc-100">
+              <p className="text-sm font-medium leading-relaxed text-fg">
                 {index + 1}. {question.prompt}
               </p>
-              <p className="mt-1 text-xs leading-relaxed text-zinc-500">
+              <p className="mt-1 text-xs leading-relaxed text-fg-muted">
                 {question.why}
               </p>
               {question.kind === "single_choice" ? (
@@ -111,7 +111,7 @@ export function AnswerForm({
                         defaultChecked={values[`answer-${question.id}`] === option}
                         className="peer sr-only"
                       />
-                      <span className="inline-flex rounded-full border border-zinc-700 bg-zinc-950 px-3 py-1.5 text-xs text-zinc-300 transition hover:border-zinc-600 peer-checked:border-emerald-500 peer-checked:text-emerald-300 peer-focus-visible:ring-2 peer-focus-visible:ring-emerald-500/40 peer-disabled:cursor-not-allowed">
+                      <span className="inline-flex rounded-full border border-line-strong bg-canvas px-3 py-1.5 text-xs text-fg-secondary transition hover:border-fg-muted peer-checked:border-accent peer-checked:bg-surface-raised peer-checked:text-fg peer-checked:before:mr-1 peer-checked:before:content-['✓'] peer-focus-visible:outline peer-focus-visible:outline-2 peer-focus-visible:outline-accent peer-focus-visible:outline-offset-2 peer-disabled:cursor-not-allowed peer-disabled:border-line peer-disabled:text-fg-muted">
                         {option}
                       </span>
                     </label>
@@ -130,9 +130,9 @@ export function AnswerForm({
             </div>
           ))}
 
-          <label className="block text-sm font-medium text-zinc-200">
+          <label className="block text-sm font-medium text-fg-secondary">
             Anything else I should know, or a question for me?{" "}
-            <span className="font-normal text-zinc-500">(optional)</span>
+            <span className="font-normal text-fg-muted">(optional)</span>
             <textarea
               key={`${fieldKey}:note`}
               name="note"
@@ -148,7 +148,7 @@ export function AnswerForm({
       {state.error ? (
         <p
           role="alert"
-          className={`${mode === "retry" ? "mb-3" : "mt-4"} rounded-lg border border-red-900/70 bg-red-950/50 px-3 py-2 text-sm text-red-300`}
+          className={`${mode === "retry" ? "mb-3" : "mt-4"} rounded-lg border border-danger-line bg-danger-bg px-3 py-2 text-sm text-danger-fg`}
         >
           {state.error}
         </p>
@@ -158,7 +158,7 @@ export function AnswerForm({
         <button
           type="submit"
           disabled={pending}
-          className="rounded-lg bg-emerald-500 px-4 py-2.5 text-sm font-medium text-emerald-950 transition-colors hover:bg-emerald-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400 focus-visible:ring-offset-2 focus-visible:ring-offset-zinc-900 disabled:cursor-wait disabled:opacity-70"
+          className="rounded-lg bg-accent px-4 py-2.5 text-sm font-medium text-on-accent transition-colors hover:bg-accent-hover disabled:cursor-wait disabled:border-line disabled:bg-surface disabled:text-fg-muted"
         >
           {pending
             ? "Reworking the diagnosis… up to 30 seconds"
@@ -171,7 +171,7 @@ export function AnswerForm({
             type="button"
             disabled={pending}
             onClick={() => setEditing(false)}
-            className="rounded-lg border border-zinc-700 px-4 py-2.5 text-sm text-zinc-300 transition-colors hover:border-zinc-600 hover:text-white disabled:opacity-60"
+            className="rounded-lg border border-line-strong px-4 py-2.5 text-sm text-fg-secondary transition-colors hover:border-fg-muted hover:text-fg disabled:cursor-not-allowed disabled:border-line disabled:bg-surface disabled:text-fg-muted"
           >
             Cancel
           </button>

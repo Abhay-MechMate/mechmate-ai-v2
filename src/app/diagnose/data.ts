@@ -110,6 +110,7 @@ export async function createSession(
 
 type SessionSummaryRow = {
   id: string;
+  vehicle_id: string | null;
   vehicle_snapshot: VehicleSnapshot;
   dtc_codes: string[];
   symptoms: string | null;
@@ -118,6 +119,7 @@ type SessionSummaryRow = {
   drivability: DiagnosticSessionSummary["drivabilityLevel"];
   top_cause: string | null;
   refined_round: number | string | null;
+  assistant_status: DiagnosticSessionSummary["assistantStatus"];
 };
 
 export async function listSessions(
@@ -127,7 +129,7 @@ export async function listSessions(
   const { data, error } = await supabase
     .from("diagnostic_sessions")
     .select(
-      "id, vehicle_snapshot, dtc_codes, symptoms, result_source, created_at, drivability:result->drivability->>level, top_cause:result->likelyCauses->0->>title, refined_round:result->>round",
+      "id, vehicle_id, vehicle_snapshot, dtc_codes, symptoms, result_source, assistant_status, created_at, drivability:result->drivability->>level, top_cause:result->likelyCauses->0->>title, refined_round:result->>round",
     )
     .order("created_at", { ascending: false })
     .limit(limit);
@@ -136,6 +138,7 @@ export async function listSessions(
 
   return (data as unknown as SessionSummaryRow[]).map((row) => ({
     id: row.id,
+    vehicleId: row.vehicle_id,
     vehicleSnapshot: row.vehicle_snapshot,
     dtcCodes: row.dtc_codes,
     symptoms: row.symptoms,
@@ -143,6 +146,7 @@ export async function listSessions(
     topCause: row.top_cause,
     resultSource: row.result_source,
     refinedRound: Number(row.refined_round ?? 0),
+    assistantStatus: row.assistant_status,
     createdAt: row.created_at,
   }));
 }

@@ -15,7 +15,7 @@ export type EntryState =
   | { kind: "unavailable"; reason: string };
 
 const inputClassName =
-  "mt-2 w-full rounded-lg border border-zinc-700 bg-zinc-950 px-3 py-2.5 text-zinc-100 outline-none transition placeholder:text-zinc-600 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 disabled:cursor-not-allowed disabled:opacity-60";
+  "mt-2 w-full rounded-lg border border-line-strong bg-canvas px-3 py-2.5 text-fg transition placeholder:text-fg-muted focus-visible:border-accent disabled:cursor-not-allowed disabled:border-line disabled:bg-surface disabled:text-fg-muted";
 
 export function FirstChecks({
   sessionId,
@@ -44,7 +44,7 @@ export function FirstChecks({
       <input type="hidden" name="expectedRevision" value={revision} />
 
       {compact ? (
-        <h3 className="text-base font-semibold text-white">
+        <h3 className="text-base font-semibold text-fg">
           Done any of these since?
         </h3>
       ) : null}
@@ -53,27 +53,27 @@ export function FirstChecks({
         {steps.map((step, index) => (
           <li
             key={`${step.instruction}:${index}`}
-            className="border-t border-zinc-800 pt-4 first:border-0 first:pt-0"
+            className="border-t border-line pt-4 first:border-0 first:pt-0"
           >
             <div className="flex gap-3">
-              <span className="text-sm font-semibold text-emerald-400">
+              <span className="text-sm font-semibold text-fg-secondary">
                 {index + 1}.
               </span>
               <div className="min-w-0 flex-1">
-                <p className="text-sm leading-relaxed text-zinc-300">
+                <p className="text-sm leading-relaxed text-fg-secondary">
                   {step.instruction}
                 </p>
                 <div className="mt-2 flex flex-wrap items-center justify-between gap-2">
-                  <span className="inline-flex rounded-full bg-zinc-800 px-2 py-1 text-xs text-zinc-400">
+                  <span className="inline-flex rounded-full border border-line bg-surface-raised px-2 py-1 text-xs text-fg-secondary">
                     {DIFFICULTY_LABEL[step.difficulty]}
                   </span>
                   {canReportChecks ? (
                     <label
                       className={`inline-flex cursor-pointer items-center gap-2 rounded-full border px-2.5 py-1 text-xs transition ${
                         done[index]
-                          ? "border-emerald-500 bg-emerald-500/10 text-emerald-300"
-                          : "border-zinc-700 text-zinc-400"
-                      } ${pending ? "cursor-wait opacity-60" : ""}`}
+                          ? "border-accent bg-surface-raised text-fg"
+                          : "border-line-strong text-fg-secondary"
+                      } ${pending ? "cursor-wait border-line text-fg-muted" : ""}`}
                     >
                       <input
                         type="checkbox"
@@ -87,14 +87,14 @@ export function FirstChecks({
                             ),
                           );
                         }}
-                        className="size-3.5 accent-emerald-500"
+                        className="size-3.5 accent-accent"
                       />
                       Done
                     </label>
                   ) : null}
                 </div>
                 {canReportChecks && done[index] ? (
-                  <label className="mt-3 block text-xs font-medium text-zinc-400">
+                  <label className="mt-3 block text-xs font-medium text-fg-secondary">
                     What did you find? <span className="font-normal">(optional)</span>
                     <input
                       type="text"
@@ -111,11 +111,11 @@ export function FirstChecks({
         ))}
       </ol>
 
-      <div className="mt-5 border-t border-zinc-800 pt-5">
+      <div className="mt-5 border-t border-line pt-5">
         {entry.kind === "start" || entry.kind === "ask_more" ? (
           <>
             {!compact ? (
-              <p className="mb-4 text-sm leading-relaxed text-zinc-400">
+              <p className="mb-4 text-sm leading-relaxed text-fg-secondary">
                 Done some of these? Tell me what you found and I&apos;ll ask the
                 2–4 questions that split the remaining causes.
               </p>
@@ -123,7 +123,7 @@ export function FirstChecks({
             {state.error ? (
               <p
                 role="alert"
-                className="mb-4 rounded-lg border border-red-900/70 bg-red-950/50 px-3 py-2 text-sm text-red-300"
+                className="mb-4 rounded-lg border border-danger-line bg-danger-bg px-3 py-2 text-sm text-danger-fg"
               >
                 {state.error}
               </p>
@@ -131,7 +131,7 @@ export function FirstChecks({
             <button
               type="submit"
               disabled={pending}
-              className="w-full rounded-lg bg-emerald-500 px-4 py-2.5 font-medium text-emerald-950 transition-colors hover:bg-emerald-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400 focus-visible:ring-offset-2 focus-visible:ring-offset-zinc-900 disabled:cursor-wait disabled:opacity-70 sm:w-auto"
+              className="w-full rounded-lg bg-accent px-4 py-2.5 font-medium text-on-accent transition-colors hover:bg-accent-hover disabled:cursor-wait disabled:border-line disabled:bg-surface disabled:text-fg-muted sm:w-auto"
             >
               {pending
                 ? "Reading your checks… up to 30 seconds"
@@ -143,14 +143,14 @@ export function FirstChecks({
         ) : entry.kind === "resume" ? (
           <Link
             href={entry.href}
-            className="inline-flex w-full justify-center rounded-lg bg-emerald-500 px-4 py-2.5 text-sm font-medium text-emerald-950 transition-colors hover:bg-emerald-400 sm:w-auto"
+            className="inline-flex w-full justify-center rounded-lg bg-accent px-4 py-2.5 text-sm font-medium text-on-accent transition-colors hover:bg-accent-hover sm:w-auto"
           >
             Resume the conversation → (questions waiting)
           </Link>
         ) : entry.kind === "view" ? (
           <Link
             href={entry.href}
-            className="inline-flex rounded-lg border border-zinc-700 bg-zinc-800 px-4 py-2.5 text-sm font-medium text-zinc-200 transition-colors hover:border-zinc-600 hover:bg-zinc-700"
+            className="inline-flex rounded-lg border border-line-strong bg-surface-raised px-4 py-2.5 text-sm font-medium text-fg-secondary transition-colors hover:border-fg-muted hover:bg-surface"
           >
             View the conversation
           </Link>
@@ -159,11 +159,11 @@ export function FirstChecks({
             <button
               type="button"
               disabled
-              className="w-full rounded-lg bg-emerald-500 px-4 py-2.5 font-medium text-emerald-950 opacity-50 sm:w-auto"
+              className="w-full rounded-lg border border-line bg-surface px-4 py-2.5 font-medium text-fg-muted sm:w-auto"
             >
               Continue with the assistant →
             </button>
-            <p className="mt-2 text-xs text-zinc-500">
+            <p className="mt-2 text-xs text-fg-muted">
               {"reason" in entry ? entry.reason : "The assistant is unavailable."}
             </p>
           </>

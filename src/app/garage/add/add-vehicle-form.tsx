@@ -1,7 +1,6 @@
 "use client";
 
 import { addVehicleAction } from "@/app/garage/actions";
-import Link from "next/link";
 import { useState } from "react";
 
 const commonMakes = [
@@ -45,29 +44,21 @@ type AddVehicleFormProps = {
 };
 
 const inputClassName =
-  "mt-2 w-full rounded-lg border border-zinc-700 bg-zinc-950 px-3 py-2.5 text-zinc-100 outline-none transition placeholder:text-zinc-600 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20";
+  "mt-2 w-full rounded-lg border border-line-strong bg-canvas px-3 py-2.5 text-fg transition placeholder:text-fg-muted focus-visible:border-accent";
 
 const tabClassName = (active: boolean) =>
   `flex-1 rounded-lg px-4 py-2.5 text-sm font-medium transition-colors ${
     active
-      ? "bg-emerald-500 text-emerald-950"
-      : "border border-zinc-700 text-zinc-400 hover:text-zinc-100 hover:border-zinc-500"
+      ? "bg-accent text-on-accent"
+      : "border border-line-strong text-fg-secondary hover:border-fg-muted hover:text-fg"
   }`;
 
 export function AddVehicleForm({ error }: AddVehicleFormProps) {
   const [mode, setMode] = useState<AddMode>("vin");
 
   return (
-    <main className="min-h-screen bg-zinc-950 px-6 py-12 text-zinc-100">
-      <div className="mx-auto w-full max-w-2xl">
-        <Link
-          href="/garage"
-          className="text-sm font-medium text-zinc-400 transition-colors hover:text-emerald-400"
-        >
-          ← Back to Garage
-        </Link>
-
-        <section className="mt-6 rounded-xl border border-zinc-800 bg-zinc-900 p-6 sm:p-8">
+    <div>
+        <section className="rounded-xl border border-line bg-surface p-6 sm:p-8">
           <h1 className="text-2xl font-semibold tracking-tight">
             Add a vehicle
           </h1>
@@ -92,7 +83,7 @@ export function AddVehicleForm({ error }: AddVehicleFormProps) {
           {error ? (
             <p
               role="alert"
-              className="mt-5 rounded-lg border border-red-900/70 bg-red-950/50 px-3 py-2 text-sm text-red-300"
+              className="mt-5 rounded-lg border border-danger-line bg-danger-bg px-3 py-2 text-sm text-danger-fg"
             >
               {error}
             </p>
@@ -100,13 +91,13 @@ export function AddVehicleForm({ error }: AddVehicleFormProps) {
 
           {mode === "vin" ? (
             <form action={addVehicleAction} className="mt-7 space-y-6">
-              <p className="text-sm leading-relaxed text-zinc-400">
+              <p className="text-sm leading-relaxed text-fg-secondary">
                 Paste the 17-character VIN (on your registration or the
                 driver&apos;s-side door jamb) and we&apos;ll fill in the year,
                 make, model, trim, and engine automatically.
               </p>
 
-              <label className="block text-sm font-medium text-zinc-200">
+              <label className="block text-sm font-medium text-fg-secondary">
                 VIN
                 <input
                   type="text"
@@ -120,9 +111,9 @@ export function AddVehicleForm({ error }: AddVehicleFormProps) {
                 />
               </label>
 
-              <label className="block text-sm font-medium text-zinc-200">
+              <label className="block text-sm font-medium text-fg-secondary">
                 Nickname{" "}
-                <span className="font-normal text-zinc-500">(optional)</span>
+                <span className="font-normal text-fg-muted">(optional)</span>
                 <input
                   type="text"
                   name="nickname"
@@ -133,20 +124,20 @@ export function AddVehicleForm({ error }: AddVehicleFormProps) {
 
               <button
                 type="submit"
-                className="w-full rounded-lg bg-emerald-500 px-4 py-2.5 font-medium text-emerald-950 transition-colors hover:bg-emerald-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400 focus-visible:ring-offset-2 focus-visible:ring-offset-zinc-900"
+                className="w-full rounded-lg bg-accent px-4 py-2.5 font-medium text-on-accent transition-colors hover:bg-accent-hover"
               >
                 Save vehicle
               </button>
             </form>
           ) : (
             <form action={addVehicleAction} className="mt-7 space-y-6">
-              <p className="text-sm leading-relaxed text-zinc-400">
+              <p className="text-sm leading-relaxed text-fg-secondary">
                 No VIN handy? Add the details yourself — only year, make, and
                 model are required.
               </p>
 
               <div className="grid gap-5 sm:grid-cols-2">
-                <label className="block text-sm font-medium text-zinc-200">
+                <label className="block text-sm font-medium text-fg-secondary">
                   Year
                   <input
                     type="number"
@@ -159,7 +150,7 @@ export function AddVehicleForm({ error }: AddVehicleFormProps) {
                   />
                 </label>
 
-                <label className="block text-sm font-medium text-zinc-200">
+                <label className="block text-sm font-medium text-fg-secondary">
                   Make
                   <input
                     type="text"
@@ -176,7 +167,7 @@ export function AddVehicleForm({ error }: AddVehicleFormProps) {
                   </datalist>
                 </label>
 
-                <label className="block text-sm font-medium text-zinc-200 sm:col-span-2">
+                <label className="block text-sm font-medium text-fg-secondary sm:col-span-2">
                   Model
                   <input
                     type="text"
@@ -187,9 +178,9 @@ export function AddVehicleForm({ error }: AddVehicleFormProps) {
                   />
                 </label>
 
-                <label className="block text-sm font-medium text-zinc-200">
+                <label className="block text-sm font-medium text-fg-secondary">
                   Trim{" "}
-                  <span className="font-normal text-zinc-500">(optional)</span>
+                  <span className="font-normal text-fg-muted">(optional)</span>
                   <input
                     type="text"
                     name="trim"
@@ -198,9 +189,9 @@ export function AddVehicleForm({ error }: AddVehicleFormProps) {
                   />
                 </label>
 
-                <label className="block text-sm font-medium text-zinc-200">
+                <label className="block text-sm font-medium text-fg-secondary">
                   Engine{" "}
-                  <span className="font-normal text-zinc-500">(optional)</span>
+                  <span className="font-normal text-fg-muted">(optional)</span>
                   <input
                     type="text"
                     name="engine"
@@ -209,9 +200,9 @@ export function AddVehicleForm({ error }: AddVehicleFormProps) {
                   />
                 </label>
 
-                <label className="block text-sm font-medium text-zinc-200 sm:col-span-2">
+                <label className="block text-sm font-medium text-fg-secondary sm:col-span-2">
                   Mileage{" "}
-                  <span className="font-normal text-zinc-500">(optional)</span>
+                  <span className="font-normal text-fg-muted">(optional)</span>
                   <input
                     type="number"
                     name="mileage"
@@ -222,9 +213,9 @@ export function AddVehicleForm({ error }: AddVehicleFormProps) {
                   />
                 </label>
 
-                <label className="block text-sm font-medium text-zinc-200 sm:col-span-2">
+                <label className="block text-sm font-medium text-fg-secondary sm:col-span-2">
                   Nickname{" "}
-                  <span className="font-normal text-zinc-500">(optional)</span>
+                  <span className="font-normal text-fg-muted">(optional)</span>
                   <input
                     type="text"
                     name="nickname"
@@ -236,14 +227,13 @@ export function AddVehicleForm({ error }: AddVehicleFormProps) {
 
               <button
                 type="submit"
-                className="w-full rounded-lg bg-emerald-500 px-4 py-2.5 font-medium text-emerald-950 transition-colors hover:bg-emerald-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400 focus-visible:ring-offset-2 focus-visible:ring-offset-zinc-900"
+                className="w-full rounded-lg bg-accent px-4 py-2.5 font-medium text-on-accent transition-colors hover:bg-accent-hover"
               >
                 Save vehicle
               </button>
             </form>
           )}
         </section>
-      </div>
-    </main>
+    </div>
   );
 }

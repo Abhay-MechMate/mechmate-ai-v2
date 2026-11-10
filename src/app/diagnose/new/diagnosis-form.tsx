@@ -15,7 +15,7 @@ export type DiagnosisVehicleOption = {
 };
 
 const inputClassName =
-  "mt-2 w-full rounded-lg border border-zinc-700 bg-zinc-950 px-3 py-2.5 text-zinc-100 outline-none transition placeholder:text-zinc-600 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 disabled:cursor-not-allowed disabled:opacity-60";
+  "mt-2 w-full rounded-lg border border-line-strong bg-canvas px-3 py-2.5 text-fg transition placeholder:text-fg-muted focus-visible:border-accent disabled:cursor-not-allowed disabled:border-line disabled:bg-surface disabled:text-fg-muted";
 
 function optionLabel(vehicle: DiagnosisVehicleOption): string {
   return (
@@ -48,7 +48,7 @@ export function DiagnosisForm({
 
   return (
     <form action={formAction} className="mt-7 space-y-6">
-      <label className="block text-sm font-medium text-zinc-200">
+      <label className="block text-sm font-medium text-fg-secondary">
         Vehicle
         <select
           key={`${fieldKey}:vehicle`}
@@ -66,8 +66,8 @@ export function DiagnosisForm({
         </select>
       </label>
 
-      <label className="block text-sm font-medium text-zinc-200">
-        Trouble codes <span className="font-normal text-zinc-500">(optional)</span>
+      <label className="block text-sm font-medium text-fg-secondary">
+        Trouble codes <span className="font-normal text-fg-muted">(optional)</span>
         <input
           key={`${fieldKey}:codes`}
           type="text"
@@ -78,14 +78,14 @@ export function DiagnosisForm({
           className={`${inputClassName} uppercase`}
           placeholder="P0420, P0171"
         />
-        <span className="mt-2 block text-xs font-normal text-zinc-500">
+        <span className="mt-2 block text-xs font-normal text-fg-muted">
           Separate multiple codes with commas. Up to 5. Codes look like P0420.
         </span>
       </label>
 
-      <label className="block text-sm font-medium text-zinc-200">
+      <label className="block text-sm font-medium text-fg-secondary">
         What&apos;s happening?{" "}
-        <span className="font-normal text-zinc-500">(optional)</span>
+        <span className="font-normal text-fg-muted">(optional)</span>
         <textarea
           key={`${fieldKey}:symptoms`}
           name="symptoms"
@@ -96,19 +96,19 @@ export function DiagnosisForm({
           className={`${inputClassName} resize-y`}
           placeholder="e.g. Shudders when I brake going downhill, started last week"
         />
-        <span className="mt-2 block text-xs font-normal text-zinc-500">
+        <span className="mt-2 block text-xs font-normal text-fg-muted">
           Use your own words—no technical terms needed. Enter 3–1,000 characters.
         </span>
       </label>
 
-      <p className="text-sm leading-relaxed text-zinc-400">
+      <p className="text-sm leading-relaxed text-fg-secondary">
         Fill in at least one: codes or a description. Both gives the best result.
       </p>
 
       {state.error ? (
         <p
           role="alert"
-          className="rounded-lg border border-red-900/70 bg-red-950/50 px-3 py-2 text-sm text-red-300"
+          className="rounded-lg border border-danger-line bg-danger-bg px-3 py-2 text-sm text-danger-fg"
         >
           {state.error}
         </p>
@@ -117,7 +117,7 @@ export function DiagnosisForm({
       <button
         type="submit"
         disabled={pending}
-        className="w-full rounded-lg bg-emerald-500 px-4 py-2.5 font-medium text-emerald-950 transition-colors hover:bg-emerald-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400 focus-visible:ring-offset-2 focus-visible:ring-offset-zinc-900 disabled:cursor-wait disabled:opacity-70"
+        className="w-full rounded-lg bg-accent px-4 py-2.5 font-medium text-on-accent transition-colors hover:bg-accent-hover disabled:cursor-wait disabled:border-line disabled:bg-surface disabled:text-fg-muted"
       >
         {pending
           ? "Analyzing… this can take up to 30 seconds"

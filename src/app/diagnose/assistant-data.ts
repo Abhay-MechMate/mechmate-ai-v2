@@ -13,6 +13,7 @@ import type {
   RediagnosisTurnPayload,
 } from "@/lib/diagnosis/assistant-types";
 import { normalizeResult } from "@/lib/diagnosis/upgrade";
+import { selectOpenConversations, type OpenConversation, type OpenSessionRow } from "@/app/dashboard/model";
 
 type SupabaseClient = Awaited<ReturnType<typeof createClient>>;
 
@@ -58,6 +59,18 @@ export async function listTurns(
           result: row.result ? normalizeResult(row.result) : null,
         };
   });
+}
+
+export async function listOpenConversations(supabase: SupabaseClient, limit = 3): Promise<OpenConversation[] | null> {
+  const { data, error } = await supabase.from("diagnostic_sessions")
+    .select("id, vehicle_id, vehicle_snapshot, symptoms, dtc_codes, initial_result, assistant_status, updated_at, top_cause:result->likelyCauses->0->>title")
+    .eq("assistant_status", "active")
+    .order("updated_at", { ascending: false })
+    .limit(limit * 2);
+  if (error || !data) return null;
+  const rows = data as unknown as OpenSessionRow[];
+  const turnLists = await Promise.all(rows.map((row) => listTurns(supabase, row.id)));
+  return selectOpenConversations(rows.map((row, index) => ({ row, turns: turnLists[index] })), limit);
 }
 
 export async function countRecentAssistantTurns(

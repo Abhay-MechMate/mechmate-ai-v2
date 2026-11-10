@@ -146,6 +146,7 @@ export type DiagnosticSession = {
 
 export type DiagnosticSessionSummary = {
   id: string;
+  vehicleId: string | null;
   vehicleSnapshot: VehicleSnapshot;
   dtcCodes: string[];
   symptoms: string | null;
@@ -153,5 +154,6 @@ export type DiagnosticSessionSummary = {
   topCause: string | null;
   resultSource: ResultSource;
   refinedRound: number;
+  assistantStatus: AssistantStatus;
   createdAt: string;
 };

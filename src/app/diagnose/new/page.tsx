@@ -2,8 +2,9 @@ import {
   DiagnosisForm,
   type DiagnosisVehicleOption,
 } from "@/app/diagnose/new/diagnosis-form";
-import { SiteHeader } from "@/components/site-header";
-import { createClient } from "@/lib/supabase/server";
+import { Alert } from "@/components/badge";
+import { signInPath } from "@/lib/auth/routing";
+import { getAuthContext } from "@/lib/supabase/auth-context";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
@@ -25,12 +26,9 @@ type VehicleRow = {
 export default async function NewDiagnosisPage({
   searchParams,
 }: NewDiagnosisPageProps) {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const { supabase, user } = await getAuthContext();
 
-  if (!user) redirect("/signin");
+  if (!user) redirect(signInPath("/diagnose/new"));
 
   const [{ data, error }, query] = await Promise.all([
     supabase
@@ -50,60 +48,55 @@ export default async function NewDiagnosisPage({
   const requestedVehicle = Array.isArray(query.vehicle)
     ? query.vehicle[0]
     : query.vehicle;
+  const requestedVehicleExists = requestedVehicle
+    ? vehicles.some((vehicle) => vehicle.id === requestedVehicle)
+    : true;
   const defaultVehicleId =
     vehicles.find((vehicle) => vehicle.id === requestedVehicle)?.id ??
     vehicles[0]?.id ??
     "";
 
   return (
-    <>
-      <SiteHeader />
-      <main className="min-h-screen bg-zinc-950 px-6 py-12 text-zinc-100">
         <div className="mx-auto w-full max-w-2xl">
-          <Link
-            href="/garage"
-            className="text-sm font-medium text-zinc-400 transition-colors hover:text-emerald-400"
-          >
-            ← Back to Garage
-          </Link>
-
-        <section className="mt-6 rounded-xl border border-zinc-800 bg-zinc-900 p-6 sm:p-8">
+        <section className="rounded-xl border border-line bg-surface p-6 sm:p-8">
           <h1 className="text-2xl font-semibold tracking-tight">New diagnosis</h1>
-          <p className="mt-2 leading-relaxed text-zinc-400">
+          <p className="mt-2 leading-relaxed text-fg-secondary">
             Enter the trouble codes from your scanner, describe what the car is
             doing, or both.
           </p>
 
           {error ? (
-            <p
-              role="alert"
-              className="mt-6 rounded-lg border border-red-900/70 bg-red-950/50 px-3 py-2 text-sm text-red-300"
-            >
+            <Alert className="mt-6">
               We couldn&apos;t load your garage. Please try again.
-            </p>
+            </Alert>
           ) : vehicles.length === 0 ? (
-            <div className="mt-7 rounded-xl border border-dashed border-zinc-700 bg-zinc-950/40 p-6 text-center">
+            <div className="mt-7 rounded-xl border border-dashed border-line-strong bg-canvas p-6 text-center">
               <h2 className="text-lg font-semibold">Add a vehicle first</h2>
-              <p className="mt-2 text-sm leading-relaxed text-zinc-400">
+              <p className="mt-2 text-sm leading-relaxed text-fg-secondary">
                 Diagnoses are tailored to your car, so we need to know what you
                 drive.
               </p>
               <Link
                 href="/garage/add"
-                className="mt-5 inline-flex rounded-lg bg-emerald-500 px-4 py-2.5 text-sm font-medium text-emerald-950 transition-colors hover:bg-emerald-400"
+                className="mt-5 inline-flex rounded-lg bg-accent px-4 py-2.5 text-sm font-medium text-on-accent transition-colors hover:bg-accent-hover"
               >
                 Add a vehicle
               </Link>
             </div>
           ) : (
-            <DiagnosisForm
-              vehicles={vehicles}
-              defaultVehicleId={defaultVehicleId}
-            />
+            <>
+              {!requestedVehicleExists ? (
+                <Alert tone="caution" className="mt-6">
+                  That car isn&apos;t in your garage anymore. Pick one below.
+                </Alert>
+              ) : null}
+              <DiagnosisForm
+                vehicles={vehicles}
+                defaultVehicleId={defaultVehicleId}
+              />
+            </>
           )}
         </section>
         </div>
-      </main>
-    </>
   );
 }

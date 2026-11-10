@@ -9,6 +9,7 @@ import {
 import { getSession } from "@/app/diagnose/data";
 import {
   assistantUnavailableReason,
+  diagnosisTrail,
   DRIVABILITY_DISPLAY,
   vehicleDetail,
   vehicleLabel,
@@ -21,7 +22,9 @@ import {
   QuestionsBubble,
   UpdateCard,
 } from "@/app/diagnose/[id]/assistant/turn-views";
-import { SiteHeader } from "@/components/site-header";
+import { Badge } from "@/components/badge";
+import { Breadcrumbs } from "@/components/breadcrumbs";
+import { signInPath } from "@/lib/auth/routing";
 import {
   ASSISTANT_MAX_ROUNDS,
   MAX_TURNS_PER_SESSION,
@@ -29,7 +32,7 @@ import {
 } from "@/lib/diagnosis/assistant-types";
 import { deriveConversation } from "@/lib/diagnosis/conversation";
 import { isAiConfigured } from "@/lib/diagnosis/openrouter";
-import { createClient } from "@/lib/supabase/server";
+import { getAuthContext } from "@/lib/supabase/auth-context";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 
@@ -46,38 +49,31 @@ function resetAt(oldestAt: string | null): string | undefined {
 }
 
 export default async function GuidedAssistantPage({ params }: AssistantPageProps) {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) redirect("/signin");
-
   const { id } = await params;
+  const { supabase, user } = await getAuthContext();
+  if (!user) redirect(signInPath(`/diagnose/${id}/assistant`));
   const session = await getSession(supabase, id);
   if (!session) notFound();
 
   const turns = await listTurns(supabase, id);
   if (turns === null) {
     return (
-      <>
-        <SiteHeader />
-        <main className="min-h-screen bg-zinc-950 px-6 py-10 text-zinc-100">
           <div className="mx-auto max-w-2xl">
-            <Link
-              href={`/diagnose/${id}`}
-              className="text-sm font-medium text-zinc-400 transition-colors hover:text-emerald-400"
-            >
-              ← Report
-            </Link>
+            <Breadcrumbs
+              items={diagnosisTrail(
+                id,
+                session.vehicleSnapshot,
+                session.createdAt,
+                "assistant",
+              )}
+            />
             <p
               role="alert"
-              className="mt-8 rounded-lg border border-red-900/70 bg-red-950/50 px-3 py-2 text-sm text-red-300"
+              className="rounded-lg border border-danger-line bg-danger-bg px-3 py-2 text-sm text-danger-fg"
             >
               We couldn&apos;t load this conversation.
             </p>
           </div>
-        </main>
-      </>
     );
   }
 
@@ -118,45 +114,40 @@ export default async function GuidedAssistantPage({ params }: AssistantPageProps
   );
 
   return (
-    <>
-      <SiteHeader />
-      <main className="min-h-screen bg-zinc-950 px-6 py-10 text-zinc-100">
         <div className="mx-auto max-w-2xl">
-          <Link
-            href={`/diagnose/${id}`}
-            className="text-sm font-medium text-zinc-400 transition-colors hover:text-emerald-400"
-          >
-            ← Report
-          </Link>
+          <Breadcrumbs
+            items={diagnosisTrail(
+              id,
+              session.vehicleSnapshot,
+              session.createdAt,
+              "assistant",
+            )}
+          />
 
-          <header className="mt-6">
+          <header>
             <h1 className="text-3xl font-bold tracking-tight">
               {vehicleLabel(session.vehicleSnapshot)}
             </h1>
-            <p className="mt-2 text-zinc-400">
+            <p className="mt-2 text-fg-secondary">
               {vehicleDetail(session.vehicleSnapshot)}
             </p>
-            <p className="mt-2 text-sm text-zinc-400">
+            <p className="mt-2 text-sm text-fg-secondary">
               Guided diagnosis · Round {activeRound} of {ASSISTANT_MAX_ROUNDS}
             </p>
           </header>
 
-          <div className="sticky top-0 z-10 -mx-2 mt-6 flex flex-wrap items-center justify-between gap-3 border-b border-zinc-800 bg-zinc-950/90 px-2 py-3 backdrop-blur">
+          <div className="sticky top-14 z-10 -mx-2 mt-6 flex flex-wrap items-center justify-between gap-3 border-b border-line bg-canvas px-2 py-3">
             <div className="flex min-w-0 flex-wrap items-center gap-2">
-              <span
-                className={`rounded-full border px-2.5 py-1 text-xs font-medium ${drivability.className}`}
-              >
-                {drivability.label}
-              </span>
+              <Badge tone={drivability.tone}>{drivability.label}</Badge>
               {topCause ? (
-                <span className="truncate text-xs text-zinc-300">
+                <span className="truncate text-xs text-fg-secondary">
                   #1 {topCause.title} · {topCause.confidence.charAt(0).toUpperCase() + topCause.confidence.slice(1)}
                 </span>
               ) : null}
             </div>
             <Link
               href={`/diagnose/${id}`}
-              className="text-xs font-medium text-emerald-400 hover:text-emerald-300"
+              className="text-xs font-medium text-accent hover:text-accent-hover"
             >
               Report →
             </Link>
@@ -172,7 +163,7 @@ export default async function GuidedAssistantPage({ params }: AssistantPageProps
                 <section
                   id={`round-${item.round}`}
                   key={item.questions.id}
-                  className="scroll-mt-24 space-y-5"
+                  className="scroll-mt-28 space-y-5"
                 >
                   <CheckReportsBubble reports={item.questions.payload.checkReports} />
 
@@ -206,17 +197,17 @@ export default async function GuidedAssistantPage({ params }: AssistantPageProps
                   </QuestionsBubble>
 
                   {!item.questions.payload.canNarrowFurther ? (
-                    <div className="rounded-xl border border-zinc-800 bg-zinc-900 p-5">
-                      <p className="text-sm leading-relaxed text-zinc-300">
+                    <div className="rounded-xl border border-line bg-surface p-5">
+                      <p className="text-sm leading-relaxed text-fg-secondary">
                         {item.questions.payload.stopReason}
                       </p>
-                      <p className="mt-2 text-sm text-zinc-400">
+                      <p className="mt-2 text-sm text-fg-secondary">
                         That&apos;s as far as questions can take it. The next step
                         is the test above.
                       </p>
                       <Link
                         href={`/diagnose/${id}`}
-                        className="mt-4 inline-flex rounded-lg bg-emerald-500 px-4 py-2.5 text-sm font-medium text-emerald-950 hover:bg-emerald-400"
+                        className="mt-4 inline-flex rounded-lg bg-accent px-4 py-2.5 text-sm font-medium text-on-accent hover:bg-accent-hover"
                       >
                         Back to the report
                       </Link>
@@ -244,8 +235,8 @@ export default async function GuidedAssistantPage({ params }: AssistantPageProps
                     >
                       {isLatest && conversation.next.kind === "ask_more" ? (
                         <div className="space-y-4">
-                          <details className="rounded-lg border border-zinc-800 bg-zinc-950/50 p-4">
-                            <summary className="cursor-pointer text-sm font-medium text-emerald-300">
+                          <details className="rounded-lg border border-line bg-canvas p-4">
+                            <summary className="cursor-pointer text-sm font-medium text-accent">
                               Ask me more
                             </summary>
                             <FirstChecks
@@ -260,7 +251,7 @@ export default async function GuidedAssistantPage({ params }: AssistantPageProps
                             <input type="hidden" name="sessionId" value={id} />
                             <button
                               type="submit"
-                              className="text-sm font-medium text-zinc-400 transition-colors hover:text-white"
+                              className="text-sm font-medium text-accent transition-colors hover:text-accent-hover"
                             >
                               I&apos;m done — see the updated report
                             </button>
@@ -275,18 +266,18 @@ export default async function GuidedAssistantPage({ params }: AssistantPageProps
 
             {conversation.next.kind === "stopped" &&
             conversation.next.why === "max_rounds" ? (
-              <section className="rounded-xl border border-zinc-800 bg-zinc-900 p-5">
-                <p className="font-medium text-white">
+              <section className="rounded-xl border border-line bg-surface p-5">
+                <p className="font-medium text-fg">
                   That&apos;s the end of guided Q&amp;A for this diagnosis.
                 </p>
                 {result.inspectionSteps[0] ? (
-                  <p className="mt-2 text-sm leading-relaxed text-zinc-400">
+                  <p className="mt-2 text-sm leading-relaxed text-fg-secondary">
                     Next: {result.inspectionSteps[0].instruction}
                   </p>
                 ) : null}
                 <Link
                   href={`/diagnose/${id}`}
-                  className="mt-4 inline-flex rounded-lg bg-emerald-500 px-4 py-2.5 text-sm font-medium text-emerald-950 hover:bg-emerald-400"
+                  className="mt-4 inline-flex rounded-lg bg-accent px-4 py-2.5 text-sm font-medium text-on-accent hover:bg-accent-hover"
                 >
                   Back to the report
                 </Link>
@@ -295,10 +286,10 @@ export default async function GuidedAssistantPage({ params }: AssistantPageProps
 
             {conversation.next.kind === "stopped" &&
             conversation.next.why === "finished" ? (
-              <section className="flex flex-wrap items-center gap-4 rounded-xl border border-zinc-800 bg-zinc-900 p-5">
+              <section className="flex flex-wrap items-center gap-4 rounded-xl border border-line bg-surface p-5">
                 <Link
                   href={`/diagnose/${id}`}
-                  className="rounded-lg bg-emerald-500 px-4 py-2.5 text-sm font-medium text-emerald-950 hover:bg-emerald-400"
+                  className="rounded-lg bg-accent px-4 py-2.5 text-sm font-medium text-on-accent hover:bg-accent-hover"
                 >
                   Back to the report
                 </Link>
@@ -307,7 +298,7 @@ export default async function GuidedAssistantPage({ params }: AssistantPageProps
                     <input type="hidden" name="sessionId" value={id} />
                     <button
                       type="submit"
-                      className="text-sm font-medium text-zinc-400 hover:text-white"
+                      className="text-sm font-medium text-accent hover:text-accent-hover"
                     >
                       Ask me more
                     </button>
@@ -318,13 +309,11 @@ export default async function GuidedAssistantPage({ params }: AssistantPageProps
           </div>
 
           {conversation.supersededCount > 0 ? (
-            <p className="mt-8 border-t border-zinc-800 pt-5 text-xs text-zinc-500">
+            <p className="mt-8 border-t border-line pt-5 text-xs text-fg-muted">
               {conversation.supersededCount} earlier {conversation.supersededCount === 1 ? "answer was" : "answers were"} replaced when you edited round{" "}
               {Number.isFinite(editedRound) ? editedRound : 1}.
             </p>
           ) : null}
         </div>
-      </main>
-    </>
   );
 }

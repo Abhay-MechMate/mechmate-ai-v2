@@ -1,26 +1,75 @@
 @import "tailwindcss";
 
+/* MechMate design tokens. Dark is the only theme (light mode: docs/BACKLOG.md).
+   Contrast pairs are asserted by src/app/__tests__/design-tokens.test.ts. */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --mm-canvas: #0b0f0d;
+  --mm-surface: #111814;
+  --mm-surface-raised: #17211b;
+  --mm-line: #2a3830;
+  --mm-line-strong: #5a7064;
+  --mm-fg: #f0f5f1;
+  --mm-fg-secondary: #b1bdb5;
+  --mm-fg-muted: #8b9a90;
+  --mm-accent: #34d399;
+  --mm-accent-hover: #6ee7b7;
+  --mm-on-accent: #052e1b;
+  --mm-ok-fg: #86efac;
+  --mm-ok-bg: #0e2a1f;
+  --mm-ok-line: #1e5a42;
+  --mm-caution-fg: #fcd34d;
+  --mm-caution-bg: #2a2108;
+  --mm-caution-line: #6b4f0e;
+  --mm-warn-fg: #fdba74;
+  --mm-warn-bg: #2b1a0c;
+  --mm-warn-line: #7a3e12;
+  --mm-danger-fg: #fca5a5;
+  --mm-danger-bg: #2b1214;
+  --mm-danger-line: #7f1d1d;
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-canvas: var(--mm-canvas);
+  --color-surface: var(--mm-surface);
+  --color-surface-raised: var(--mm-surface-raised);
+  --color-line: var(--mm-line);
+  --color-line-strong: var(--mm-line-strong);
+  --color-fg: var(--mm-fg);
+  --color-fg-secondary: var(--mm-fg-secondary);
+  --color-fg-muted: var(--mm-fg-muted);
+  --color-accent: var(--mm-accent);
+  --color-accent-hover: var(--mm-accent-hover);
+  --color-on-accent: var(--mm-on-accent);
+  --color-ok-fg: var(--mm-ok-fg);
+  --color-ok-bg: var(--mm-ok-bg);
+  --color-ok-line: var(--mm-ok-line);
+  --color-caution-fg: var(--mm-caution-fg);
+  --color-caution-bg: var(--mm-caution-bg);
+  --color-caution-line: var(--mm-caution-line);
+  --color-warn-fg: var(--mm-warn-fg);
+  --color-warn-bg: var(--mm-warn-bg);
+  --color-warn-line: var(--mm-warn-line);
+  --color-danger-fg: var(--mm-danger-fg);
+  --color-danger-bg: var(--mm-danger-bg);
+  --color-danger-line: var(--mm-danger-line);
+  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, monospace;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+@layer base {
+  html {
+    color-scheme: dark;
+    background-color: var(--mm-canvas);
   }
-}
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  body {
+    background-color: var(--mm-canvas);
+    color: var(--mm-fg);
+    font-family: var(--font-sans);
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--mm-accent);
+    outline-offset: 2px;
+  }
 }

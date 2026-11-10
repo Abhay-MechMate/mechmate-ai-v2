@@ -1,0 +1,29 @@
+I've written the design to `docs/FRONTEND_REVAMP_DESIGN.md`, with all 8 sections in the same format as `GUIDED_ASSISTANT_DESIGN.md`; nothing is committed and no app code was touched. Key decisions:
+
+- **Shell placement:** the sidebar and top bar attach through three small layout files (`dashboard/`, `garage/`, `diagnose/`) rather than a route group. A route group would have moved files and rewritten imports in 27 files, tests included. The collapse setting lives in a cookie (`mm_sidebar`), so it survives page changes without a flash.
+- **Auth:** the layouts only read the user to show the email; every page keeps its own sign-in redirect.
+- **Tokens:** your nine colours are CSS custom properties exposed as Tailwind classes. I added a few the palette can't cover:
+  - a hover colour for primary buttons;
+  - a stronger border for form fields, because the approved border colour only reaches about 1.5:1 and input edges need 3:1;
+  - four solid "status" colour families (OK / caution / warn / danger), so "OK to drive" green is never confused with the clickable accent.
+- **Sidebar:** 240px wide, 64px when collapsed. In collapsed mode, hovering or tabbing into it expands it over the content, with no layout shift. Items follow your order exactly, and New diagnosis is always a filled accent button.
+- **Dashboard:** a new page at `/dashboard`, ordered by urgency:
+  1. Assistant conversations waiting on you.
+  2. Your cars, each with a Diagnose button.
+  3. Recent diagnoses.
+
+  A brand-new user sees a "Get started" checklist instead of empty boxes. Each section fails on its own with an inline message, so one broken query doesn't blank the page. Open conversations are worked out from the conversation history, not the stored status. That status column stays "active" for some conversations that have actually stopped.
+- **Redirects:** all routing rules sit in one function. Signed-in users on `/`, `/signin` or `/signup` go to `/dashboard`. Signed-out users on app pages go to `/signin` and return to the same URL after signing in, with protection against redirects to other sites.
+- **Breadcrumbs:** they appear in the page above the heading and replace the old top "← back" links. The in-page "Report →" and "Back to the report" links stay.
+- **Tests:** all new logic lives in plain `.ts` modules so it can be unit-tested. Two repo-wide checks enforce your rules: one recomputes every colour contrast ratio from `globals.css`, and one fails on raw zinc/emerald classes, shadows, thin fonts, blur and tooltips. The second has a list of not-yet-migrated files that shrinks page by page until it is empty.
+
+Things to know:
+
+- **Contrast numbers are hand-calculated.** The quick script to verify them needed your approval and didn't run. The contrast test in the doc recomputes them on every test run, so a wrong value will fail there rather than ship. The script is still at `AppData\Local\Temp\mm-contrast\contrast.js` if you want to delete it.
+- **Two existing bugs to fix in the build:**
+  - `globals.css` forces Arial on every page, so the Geist font has never actually shown.
+  - `/garage/add` has no sign-in check: signed-out visitors see the form and only get redirected when they submit.
+- **Two calls for you:**
+  - Your decision puts branding and account in both the top bar and the sidebar. To avoid two of each, I put the wordmark and email in the top bar and Sign out at the bottom of the sidebar. Showing the email in the sidebar too is a one-line change.
+  - There's no "Dashboard" item in the sidebar, since you didn't list one; the wordmark is the way back. Adding a "Home" item is logged in the backlog.
+- **One visible landing change:** the feature card titles go from emerald to plain text to follow the accent rule. Easy to revert if you'd rather keep them.

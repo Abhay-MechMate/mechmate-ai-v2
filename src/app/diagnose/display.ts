@@ -6,6 +6,9 @@ import type {
   VehicleSnapshot,
 } from "@/lib/diagnosis/types";
 import type { AssistantState } from "@/lib/diagnosis/assistant-types";
+import type { Crumb } from "@/components/breadcrumbs";
+import type { Tone } from "@/components/tone";
+import type { DiagnosticSessionSummary } from "@/lib/diagnosis/types";
 
 export function vehicleLabel(snapshot: VehicleSnapshot): string {
   return (
@@ -33,41 +36,41 @@ export function vehicleDetail(snapshot: VehicleSnapshot): string {
 
 export const DRIVABILITY_DISPLAY: Record<
   DrivabilityLevel,
-  { label: string; className: string }
+  { label: string; tone: Tone }
 > = {
   ok_to_drive: {
     label: "OK to drive",
-    className: "border-emerald-800 bg-emerald-950/50 text-emerald-300",
+    tone: "ok",
   },
   drive_with_caution: {
     label: "Drive with caution",
-    className: "border-amber-800 bg-amber-950/50 text-amber-300",
+    tone: "caution",
   },
   drive_to_shop_only: {
     label: "Drive to a shop only",
-    className: "border-orange-800 bg-orange-950/50 text-orange-300",
+    tone: "warn",
   },
   do_not_drive: {
     label: "Do not drive",
-    className: "border-red-800 bg-red-950/50 text-red-300",
+    tone: "danger",
   },
 };
 
 export const CONFIDENCE_DISPLAY: Record<
   Confidence,
-  { label: string; className: string }
+  { label: string; tone: Tone }
 > = {
   high: {
     label: "High confidence",
-    className: "border-emerald-800 bg-emerald-950/50 text-emerald-300",
+    tone: "ok",
   },
   medium: {
     label: "Medium confidence",
-    className: "border-amber-800 bg-amber-950/50 text-amber-300",
+    tone: "caution",
   },
   low: {
     label: "Low confidence",
-    className: "border-zinc-700 bg-zinc-800 text-zinc-300",
+    tone: "neutral",
   },
 };
 
@@ -88,6 +91,32 @@ export function formatSessionDate(iso: string): string {
     dateStyle: "medium",
     timeStyle: "short",
   });
+}
+
+export function formatSessionDay(iso: string): string {
+  return new Date(iso).toLocaleDateString("en-US", { dateStyle: "medium" });
+}
+
+export function formatRelative(iso: string, now = Date.now()): string {
+  const elapsed = Math.max(0, now - new Date(iso).getTime());
+  const minutes = Math.floor(elapsed / 60_000);
+  if (minutes < 1) return "just now";
+  if (minutes < 60) return `${minutes}m ago`;
+  const hours = Math.floor(minutes / 60);
+  if (hours < 24) return `${hours}h ago`;
+  if (hours < 48) return "yesterday";
+  return formatSessionDay(iso);
+}
+
+export function diagnosisTrail(sessionId: string, snapshot: VehicleSnapshot, createdAt: string, leaf: "report" | "assistant"): Crumb[] {
+  const report = `${vehicleLabel(snapshot)} — ${formatSessionDay(createdAt)}`;
+  return leaf === "report"
+    ? [{ label: "Diagnoses", href: "/diagnose" }, { label: report }]
+    : [{ label: "Diagnoses", href: "/diagnose" }, { label: report, href: `/diagnose/${sessionId}` }, { label: "Assistant conversation" }];
+}
+
+export function sessionSourceLabel(summary: Pick<DiagnosticSessionSummary, "resultSource">): "AI analysis" | "Built-in guide" {
+  return summary.resultSource === "ai" ? "AI analysis" : "Built-in guide";
 }
 
 const FALLBACK_REASON_LABEL: Record<FallbackReason, string> = {
