@@ -3,14 +3,18 @@
 /* MechMate design tokens. Dark is the only theme (light mode: docs/BACKLOG.md).
    Contrast pairs are asserted by src/app/__tests__/design-tokens.test.ts. */
 :root {
-  --mm-canvas: #0b0f0d;
-  --mm-surface: #111814;
-  --mm-surface-raised: #17211b;
-  --mm-line: #2a3830;
-  --mm-line-strong: #5a7064;
-  --mm-fg: #f0f5f1;
-  --mm-fg-secondary: #b1bdb5;
-  --mm-fg-muted: #8b9a90;
+  /* Neutrals are near-black with only a trace of green; green lives in the
+     accent (actions/active/focus) and the status colours, never in the canvas,
+     surfaces or greyscale text. Owner feedback 2026-11-12: the green-tinted
+     surfaces read as "too green" and the green-grey text read as ghosting. */
+  --mm-canvas: #0a0b0a;
+  --mm-surface: #101211;
+  --mm-surface-raised: #171a18;
+  --mm-line: #2a2e2b;
+  --mm-line-strong: #616b64;
+  --mm-fg: #f1f4f2;
+  --mm-fg-secondary: #b3b8b4;
+  --mm-fg-muted: #8e948f;
   --mm-accent: #34d399;
   --mm-accent-hover: #6ee7b7;
   --mm-on-accent: #052e1b;

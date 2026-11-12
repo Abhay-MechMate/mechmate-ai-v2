@@ -41,7 +41,7 @@ describe("diagnosis fallback orchestration", () => {
       usage: { promptTokens: 1, completionTokens: 1, costUsd: 0.001 },
       latencyMs: 10,
     });
-    const safetyInput = { dtcCodes: [], symptoms: "My brakes are grinding" };
+    const safetyInput = { dtcCodes: [], symptoms: "The brake pedal sinks to the floor" };
     const result = await runDiagnosis(safetyInput, vehicle, { aiAllowed: true });
     expect(result.source).toBe("ai");
     expect(result.result.drivability.level).toBe("drive_to_shop_only");

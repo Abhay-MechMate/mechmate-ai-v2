@@ -78,15 +78,24 @@ describe("assistant output validation", () => {
     expect(parseQuestionsOutput(output, baseline, 1)?.questions).toHaveLength(2);
   });
 
-  it("drops hand-tool and hands-on questions for a safety-critical baseline", () => {
+  it("drops hand-tool and hands-on questions for a shop-only baseline", () => {
     const baseline = validResult();
-    baseline.safetyCritical = true;
+    baseline.drivability.level = "drive_to_shop_only";
     const output = validQuestionsOutput();
     output.questions.push(
       { ...question(3), requires: "hand_tools" },
       { ...question(4), prompt: "Remove the caliper and inspect it." },
     );
     expect(parseQuestionsOutput(output, baseline, 1)?.questions).toHaveLength(2);
+  });
+
+  it("keeps hand-tool questions when a safety-critical baseline is drivable", () => {
+    const baseline = validResult();
+    baseline.safetyCritical = true;
+    baseline.drivability.level = "drive_with_caution";
+    const output = validQuestionsOutput();
+    output.questions.push({ ...question(3), requires: "hand_tools" });
+    expect(parseQuestionsOutput(output, baseline, 1)?.questions).toHaveLength(3);
   });
 
   it("rejects a stop response without a stop reason", () => {

@@ -297,40 +297,86 @@ export const SYMPTOM_RULES: readonly SymptomRule[] = [
     ], mechanicReason: "An oil pressure warning needs inspection before driving.",
   },
   {
-    id: "brakes", pattern: /\b(brakes?|braking|brake pedal|pedal (goes|sinks) to the floor|brake light)\b/i,
+    // Severe tier: hydraulic failure signs only. Generic brake mentions are handled
+    // by brakes_wear below — a squealing or grinding car is worn, not undrivable.
+    id: "brakes_hydraulic",
+    pattern: /\b(pedal (goes|sinks|falls) to the floor|pedal feels? (soft|spongy)|(soft|spongy) pedal|no brakes|brakes? (are |is )?(not |hardly )?(working|stopping)|brake fluid (leak|is leaking)|leaking brake fluid|low brake fluid|brake warning light)\b/i,
     system: "brakes", drivability: "drive_to_shop_only", safetyCritical: true,
-    headline: "Brake problems affect your ability to stop — drive only to a shop, gently.",
+    headline: "Brake hydraulics may be failing — drive only to a shop, gently, or have it towed.",
     causes: [
-      { title: "Worn brake pads or rotors", confidence: "medium", explanation: "Grinding, squealing, or shaking when braking usually comes from worn or warped parts." },
-      { title: "Low brake fluid or a leak", confidence: "low", explanation: "A soft or sinking pedal can mean fluid is low or leaking." },
+      { title: "Low brake fluid or a leak", confidence: "medium", explanation: "A soft, spongy, or sinking pedal usually means fluid is low or leaking." },
     ],
     steps: [{ instruction: "With the engine off, check the brake fluid level in the reservoir and look for wet spots near each wheel.", difficulty: "diy_easy" }],
     tools: ["Flashlight"], stopDrivingIf: [
       "If the brake pedal feels soft or sinks, continued driving risks losing hydraulic braking — stop and have the car towed.",
       "If the brake warning light is on with low fluid, a hydraulic leak can lead to brake failure — stop and have the car towed.",
-      "If braking is metal-on-metal, continued driving can destroy the rotors and reduce stopping ability — stop and have the car towed.",
-    ], mechanicReason: "Brakes are safety-critical and should be inspected by a mechanic.",
+    ], mechanicReason: "Possible brake hydraulic failure needs a mechanic before the car is driven normally.",
   },
   {
-    id: "steering_suspension", pattern: /\b(steering|pulls? (hard )?to (the )?(left|right)|wheel (wobble|wobbles|shakes?)|clunk(s|ing)?|wandering)\b/i,
+    // Wear tier: any other brake mention. Worn pads are a normal, common fix,
+    // not an emergency — the owner should get DIY steps, not a stop warning.
+    id: "brakes_wear",
+    pattern: /\b(brakes?|braking|brake pedal|brake light)\b/i,
+    system: "brakes", drivability: "drive_with_caution", safetyCritical: true,
+    headline: "Get the brakes inspected soon — worn pads are a normal fix and the car is fine to drive gently meanwhile.",
+    causes: [
+      { title: "Worn brake pads or rotors", confidence: "medium", explanation: "Squealing, grinding, or shaking when braking usually comes from worn or warped parts." },
+      { title: "Low brake fluid", confidence: "low", explanation: "Only a concern if the pedal also feels soft or sinks — otherwise unlikely." },
+    ],
+    steps: [
+      { instruction: "With the engine off, check the brake fluid level in the reservoir and look for wet spots near each wheel.", difficulty: "diy_easy" },
+      { instruction: "Look through the front wheel spokes at the brake disc: a thin pad edge or metal-on-metal marks mean the pads are due now.", difficulty: "diy_easy" },
+    ],
+    tools: ["Flashlight"], stopDrivingIf: [
+      "If the pedal starts feeling soft or sinks, or the brake warning light comes on, that is a leak sign rather than normal wear — stop and have the car towed.",
+    ], mechanicReason: "Brake pads wear out with use and should be measured and replaced before they get thin.",
+  },
+  {
+    // Severe tier: loss of steering control. Wobble, clunks and pulling are
+    // handled by steering_suspension below.
+    id: "steering_failure",
+    pattern: /\b(steering (feels? |is )?(loose|heavy)|steering (has )?(gone|quit|stopped)|lost steering|no steering)\b/i,
     system: "steering", drivability: "drive_to_shop_only", safetyCritical: true,
-    headline: "Steering or suspension issues can affect control — drive only to a shop.",
-    causes: [{ title: "Worn steering or suspension parts (tie rods, ball joints, bushings)", confidence: "low", explanation: "Clunks, wandering, or pulling often come from worn joints or alignment problems." }],
+    headline: "Loose or heavy steering risks losing directional control — drive only to a shop, gently.",
+    causes: [{ title: "Failing steering component (tie rod, rack, pump)", confidence: "medium", explanation: "Steering that suddenly feels loose or heavy points to a failing steering part." }],
+    steps: [{ instruction: "Note when it feels loose or heavy (parking, highway, cold vs warm) and check the power steering fluid if there is a reservoir.", difficulty: "diy_easy" }],
+    tools: [], stopDrivingIf: [
+      "If steering becomes very heavy or vague, continued driving risks losing directional control — stop and have the car towed.",
+    ], mechanicReason: "Failing steering parts need a mechanic before normal driving.",
+  },
+  {
+    // Wear tier: wobble, clunks, pulling, wandering are usually worn parts or
+    // alignment — get them checked soon, but the car is drivable.
+    id: "steering_suspension",
+    pattern: /\b(steering|pulls? (hard )?to (the )?(left|right)|wheel (wobble|wobbles|shakes?)|clunk(s|ing)?|wandering)\b/i,
+    system: "steering", drivability: "drive_with_caution", safetyCritical: true,
+    headline: "Get the steering or suspension checked soon — clunks, wobble, or pulling usually mean worn parts or alignment, not an emergency.",
+    causes: [{ title: "Worn steering or suspension parts (tie rods, ball joints, bushings)", confidence: "medium", explanation: "Clunks, wandering, or pulling often come from worn joints or alignment problems." }],
     steps: [{ instruction: "Note when it happens (turning, bumps, braking, speed) and check tire pressures.", difficulty: "diy_easy" }],
     tools: ["Tire pressure gauge"], stopDrivingIf: [
-      "If steering becomes loose or very heavy, continued driving risks losing directional control — stop and have the car towed.",
-      "If the car wanders or a wheel wobbles, a steering, suspension, or wheel part may separate and cause loss of control — stop and have it towed.",
-    ], mechanicReason: "Steering and suspension are safety-critical.",
+      "If steering becomes loose or very heavy, that is no longer a worn-parts symptom — stop and have the car towed.",
+    ], mechanicReason: "Worn steering or suspension parts should be found and replaced before they wear further.",
   },
   {
-    id: "tires", pattern: /\b(flat tire|tire (bulge|bubble|blowout)|losing air|cords? showing)\b/i,
+    id: "tire_damage", pattern: /\b(flat tire|tire (bulge|bubble|blowout)|cords? showing)\b/i,
     system: "tires_wheels", drivability: "drive_to_shop_only", safetyCritical: true,
     headline: "A damaged tire can fail suddenly — use the spare or drive only to a tire shop.",
-    causes: [{ title: "Tire damage or puncture", confidence: "medium", explanation: "Bulges and air loss mean the tire's structure or seal is damaged." }],
+    causes: [{ title: "Tire damage or puncture", confidence: "medium", explanation: "Bulges and exposed cords mean the tire's structure is damaged." }],
     steps: [{ instruction: "Check the tire pressure and look for nails, bulges, or exposed cords.", difficulty: "diy_easy" }],
     tools: ["Tire pressure gauge", "Flashlight"], stopDrivingIf: [
       "If the tire is flat, bulging, or showing cords, continued driving can make it fail and damage the wheel or cause loss of control — use the spare or tow it.",
     ], mechanicReason: "Damaged tires should be inspected by a tire shop.",
+  },
+  {
+    id: "tire_leak",
+    pattern: /\blosing air\b/i,
+    system: "tires_wheels", drivability: "drive_with_caution", safetyCritical: true,
+    headline: "A slow leak is usually a puncture — add air as needed and get it plugged soon.",
+    causes: [{ title: "Slow puncture or bead leak", confidence: "medium", explanation: "Losing air over days usually means a small puncture or a leaking bead seal." }],
+    steps: [{ instruction: "Check the pressure weekly, note which tire loses air fastest, and look for a nail or cut in the tread.", difficulty: "diy_easy" }],
+    tools: ["Tire pressure gauge"], stopDrivingIf: [
+      "If the tire goes flat overnight or pressure drops fast, use the spare rather than driving on it.",
+    ], mechanicReason: "A tire that keeps losing air should be inspected and plugged or patched.",
   },
   {
     id: "flashing_cel", pattern: /\b(flashing|blinking)\b[^.]*\b(check engine|engine light|cel|mil)\b|\b(check engine|engine light|cel|mil)\b[^.]*\b(flashing|blinking)\b/i,

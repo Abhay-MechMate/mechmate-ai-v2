@@ -53,6 +53,50 @@ describe("rule diagnosis", () => {
     if (catalystIndex >= 0) expect(catalystIndex).toBeGreaterThan(misfireIndex);
   });
 
+  it("treats brake wear symptoms as drivable (owner feedback: wear is not an emergency)", () => {
+    const wear = diagnoseWithRules(
+      { dtcCodes: [], symptoms: "Braking performance is reduced and the brakes squeal" },
+      vehicle,
+    );
+    expect(wear.drivability.level).toBe("drive_with_caution");
+    expect(wear.likelyCauses[0].title).toContain("Worn brake pads");
+    expect(wear.inspectionSteps.length).toBeGreaterThan(0);
+    expect(wear.drivability.stopDrivingIf).toEqual([]);
+
+    const grind = diagnoseWithRules({ dtcCodes: [], symptoms: "My brakes are grinding" }, vehicle);
+    expect(grind.drivability.level).toBe("drive_with_caution");
+    expect(grind.safetyCritical).toBe(true);
+  });
+
+  it("keeps genuine brake hydraulic failure at shop-only", () => {
+    const failure = diagnoseWithRules(
+      { dtcCodes: [], symptoms: "The brake pedal sinks to the floor" },
+      vehicle,
+    );
+    expect(failure.drivability.level).toBe("drive_to_shop_only");
+    expect(failure.drivability.stopDrivingIf.length).toBeGreaterThan(0);
+  });
+
+  it("tiers steering and tire rules the same way", () => {
+    const wobble = diagnoseWithRules(
+      { dtcCodes: [], symptoms: "The wheel wobbles at highway speed" },
+      vehicle,
+    );
+    expect(wobble.drivability.level).toBe("drive_with_caution");
+
+    const heavy = diagnoseWithRules(
+      { dtcCodes: [], symptoms: "Steering feels heavy when parking" },
+      vehicle,
+    );
+    expect(heavy.drivability.level).toBe("drive_to_shop_only");
+
+    const leak = diagnoseWithRules({ dtcCodes: [], symptoms: "The tire keeps losing air" }, vehicle);
+    expect(leak.drivability.level).toBe("drive_with_caution");
+
+    const cords = diagnoseWithRules({ dtcCodes: [], symptoms: "Cords showing on the tire" }, vehicle);
+    expect(cords.drivability.level).toBe("drive_to_shop_only");
+  });
+
   it("explains unknown manufacturer and chassis codes", () => {
     const manufacturer = diagnoseWithRules({ dtcCodes: ["P1234"], symptoms: null }, vehicle);
     expect(manufacturer.likelyCauses[0].confidence).toBe("low");

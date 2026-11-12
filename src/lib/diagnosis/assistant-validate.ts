@@ -67,14 +67,14 @@ export function parseQuestionsOutput(
     ) {
       continue;
     }
-    if (
-      raw.requires === "test_drive" &&
-      ["drive_to_shop_only", "do_not_drive"].includes(baseline.drivability.level)
-    ) {
+    const shopOnlyBaseline = ["drive_to_shop_only", "do_not_drive"].includes(
+      baseline.drivability.level,
+    );
+    if (raw.requires === "test_drive" && shopOnlyBaseline) {
       continue;
     }
     if (
-      baseline.safetyCritical &&
+      shopOnlyBaseline &&
       (raw.requires === "hand_tools" || HANDS_ON_PATTERN.test(prompt))
     ) {
       continue;
