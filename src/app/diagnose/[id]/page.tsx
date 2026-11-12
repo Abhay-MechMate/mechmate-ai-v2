@@ -26,6 +26,8 @@ import {
 import { deriveConversation } from "@/lib/diagnosis/conversation";
 import { diffResults } from "@/lib/diagnosis/diff";
 import { isAiConfigured } from "@/lib/diagnosis/openrouter";
+import { deriveParts } from "@/lib/parts/derive";
+import { PartsSection } from "@/components/parts-section";
 import { getAuthContext } from "@/lib/supabase/auth-context";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
@@ -299,6 +301,8 @@ export default async function DiagnosisReportPage({
             entry={entry}
           />
         </section>
+
+        <PartsSection causes={deriveParts(result)} vehicle={vehicleSnapshot} />
 
         {result.toolsNeeded.length > 0 ? (
           <section className="mt-6 rounded-xl border border-line bg-surface p-6">
