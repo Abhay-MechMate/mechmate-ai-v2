@@ -1,6 +1,13 @@
 import { describe, expect, it } from "vitest";
 import { CAUSE_PARTS, NON_FIXABLE_CAUSES, SYSTEM_PARTS, type PartLine } from "../map";
-import { autoZoneLink, buildStoreLinks, oreillyLink, rockAutoLink } from "../stores";
+import {
+  advanceLink,
+  autoZoneLink,
+  buildStoreLinks,
+  oreillyLink,
+  rockAutoLink,
+  storeLocatorLink,
+} from "../stores";
 import { deriveParts } from "../derive";
 import { DTC_KNOWLEDGE, SYMPTOM_RULES } from "@/lib/diagnosis/dtc-knowledge";
 import { VEHICLE_SYSTEMS, type DiagnosisResult, type VehicleSnapshot } from "@/lib/diagnosis/types";
@@ -79,29 +86,54 @@ describe("store link builders", () => {
     );
   });
 
-  it("builds AutoZone/O'Reilly search URLs with the vehicle baked in (owner feedback: put the car in for them)", () => {
-    expect(autoZoneLink(vehicle, { searchTerms: "front brake pads" })).toBe(
-      "https://www.autozone.com/searchresult?searchText=2023+Audi+Q5+front+brake+pads",
+  it("builds clean part-term search URLs — vehicle-prefixed terms made O'Reilly return junk (owner feedback 2026-11-16)", () => {
+    expect(autoZoneLink({ searchTerms: "thermostat" })).toBe(
+      "https://www.autozone.com/searchresult?searchText=thermostat",
     );
-    expect(oreillyLink(vehicle, { searchTerms: "front brake pads" })).toBe(
-      "https://www.oreillyauto.com/search?q=2023+Audi+Q5+front+brake+pads",
+    expect(oreillyLink({ searchTerms: "thermostat" })).toBe(
+      "https://www.oreillyauto.com/search?q=thermostat",
+    );
+    expect(advanceLink({ searchTerms: "front brake pads" })).toBe(
+      "https://www.advanceautoparts.com/web/SearchResults?searchTerm=front+brake+pads",
     );
   });
 
-  it("falls back to part terms alone without a vehicle year", () => {
-    expect(
-      autoZoneLink(
-        { make: "Audi", model: "Q5", modelYear: null },
-        { searchTerms: "front brake pads" },
-      ),
-    ).toBe("https://www.autozone.com/searchresult?searchText=front+brake+pads");
-  });
-
-  it("buildStoreLinks returns all three stores with fulfillment labels", () => {
+  it("buildStoreLinks returns all four stores; the pinned store sorts first", () => {
     const links = buildStoreLinks(vehicle, { searchTerms: "catalytic converter" });
-    expect(links.map((link) => link.store)).toEqual(["rockauto", "autozone", "oreilly"]);
+    expect(links.map((link) => link.store)).toEqual([
+      "rockauto",
+      "autozone",
+      "oreilly",
+      "advance",
+    ]);
     expect(links.every((link) => link.url.startsWith("https://"))).toBe(true);
-    expect(links.every((link) => link.fulfillment.length > 0)).toBe(true);
+
+    const reordered = buildStoreLinks(
+      vehicle,
+      { searchTerms: "catalytic converter" },
+      "oreilly",
+    );
+    expect(reordered[0].store).toBe("oreilly");
+    expect(reordered.slice(1).map((link) => link.store)).toEqual([
+      "rockauto",
+      "autozone",
+      "advance",
+    ]);
+  });
+
+  it("builds store-locator links with the zip where the store supports it", () => {
+    expect(storeLocatorLink("advance", "01852")).toBe(
+      "https://stores.advanceautoparts.com/?zipcode=01852",
+    );
+    expect(storeLocatorLink("oreilly", "01852")).toBe(
+      "https://locations.oreillyauto.com/en-us/?searchterm=01852",
+    );
+    expect(storeLocatorLink("autozone", "01852")).toBe(
+      "https://www.autozone.com/locations/",
+    );
+    expect(storeLocatorLink("rockauto", "01852")).toBeNull();
+    expect(storeLocatorLink("advance", "0185")).toBeNull();
+    expect(storeLocatorLink("advance", "abcde")).toBeNull();
   });
 
   it("handles multi-word makes and models", () => {

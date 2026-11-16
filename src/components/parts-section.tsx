@@ -1,15 +1,20 @@
 // Phase 4: "Parts you may need" section on the diagnosis report.
 // Derived at render time from the current result (docs/PARTS_DESIGN.md §5).
 // Layout rules from owner feedback (2026-11-16, "hard to look at"):
-//   - store links are compact bordered chips, one row per part
-//   - the fulfillment explanation appears ONCE under the header, never per link
+//   - store links are compact bordered chips (client component, pin + zip live
+//     in parts-store-widgets.tsx)
+//   - fulfillment/instructions appear ONCE under the header, never per link
 //   - difficulty appears only when it changes a decision (shop-level jobs)
-//   - framing text is one line
+//   - search links carry clean part terms; the store's own vehicle selection
+//     does the fitment (vehicle-prefixed terms made O'Reilly return junk)
 // Accent discipline: chips are bordered, never filled accent; hover tints text.
 
 import type { VehicleSnapshot } from "@/lib/diagnosis/types";
 import type { CauseParts } from "@/lib/parts/derive";
-import { buildStoreLinks } from "@/lib/parts/stores";
+import {
+  PartsStoreChips,
+  PartsZipBar,
+} from "@/components/parts-store-widgets";
 
 type PartsSectionProps = {
   causes: CauseParts[];
@@ -18,18 +23,18 @@ type PartsSectionProps = {
 
 export function PartsSection({ causes, vehicle }: PartsSectionProps) {
   if (causes.length === 0) return null;
-  const yearLabel = vehicle.modelYear ? String(vehicle.modelYear) : null;
 
   return (
     <section className="mt-6 rounded-xl border border-line bg-surface p-6">
       <h2 className="text-xl font-semibold">Parts you may need</h2>
       <p className="mt-2 text-sm leading-relaxed text-fg-secondary">
-        {yearLabel
-          ? `Links are pre-searched for your ${yearLabel} ${vehicle.make} ${vehicle.model} — each store confirms exact fitment.`
-          : "Links are pre-searched — each store confirms exact fitment."}{" "}
-        RockAuto ships to home; AutoZone and O&apos;Reilly also offer same-day
-        store pickup.
+        Search links open with the part name. Add your car once on a store&apos;s
+        site and its results filter to fit — RockAuto already scopes to your
+        car. Pin a store to keep it first, and save your zip for pickup-store
+        locators.
       </p>
+
+      <PartsZipBar />
 
       <div className="mt-4 divide-y divide-line">
         {causes.map((cause) => (
@@ -53,19 +58,10 @@ export function PartsSection({ causes, vehicle }: PartsSectionProps) {
                       {part.note}
                     </p>
                   ) : null}
-                  <div className="mt-2 flex flex-wrap gap-2">
-                    {buildStoreLinks(vehicle, part).map((link) => (
-                      <a
-                        key={link.store}
-                        href={link.url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="rounded-md border border-line bg-canvas px-2.5 py-1 text-xs text-fg-secondary transition-colors hover:border-line-strong hover:text-fg"
-                      >
-                        {link.name} →
-                      </a>
-                    ))}
-                  </div>
+                  <PartsStoreChips
+                    vehicle={vehicle}
+                    searchTerms={part.searchTerms}
+                  />
                 </li>
               ))}
             </ul>

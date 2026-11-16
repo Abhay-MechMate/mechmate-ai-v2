@@ -55,7 +55,7 @@ export const CAUSE_PARTS: Record<string, PartLine[]> = {
   "failed heater inside the upstream oxygen sensor": [
     {
       label: "Upstream O2 sensor (bank 1, sensor 1)",
-      searchTerms: "upstream oxygen sensor bank 1",
+      searchTerms: "oxygen sensor",
       difficulty: "diy_moderate",
     },
   ],
@@ -70,7 +70,7 @@ export const CAUSE_PARTS: Record<string, PartLine[]> = {
   "loose, missing, or damaged gas cap": [
     {
       label: "Fuel filler gas cap",
-      searchTerms: "gas cap fuel filler",
+      searchTerms: "gas cap",
       difficulty: "diy_easy",
     },
   ],
@@ -89,7 +89,7 @@ export const CAUSE_PARTS: Record<string, PartLine[]> = {
   "cracked or disconnected evap hose": [
     {
       label: "EVAP hose (rubber, correct inside diameter)",
-      searchTerms: "evap vacuum hose",
+      searchTerms: "evap hose",
       difficulty: "diy_easy",
     },
   ],
@@ -240,14 +240,14 @@ export const CAUSE_PARTS: Record<string, PartLine[]> = {
   "thermostat stuck open": [
     {
       label: "Thermostat (correct temperature rating) + gasket",
-      searchTerms: "engine thermostat",
+      searchTerms: "thermostat",
       difficulty: "diy_moderate",
     },
   ],
   "low coolant level": [
     {
       label: "Coolant (the exact type the manufacturer specifies)",
-      searchTerms: "engine coolant",
+      searchTerms: "coolant",
       note: "Top up only after finding where it went — coolant does not disappear.",
       difficulty: "diy_easy",
     },
@@ -255,7 +255,7 @@ export const CAUSE_PARTS: Record<string, PartLine[]> = {
   "low coolant from a leak": [
     {
       label: "Coolant (the exact type the manufacturer specifies)",
-      searchTerms: "engine coolant",
+      searchTerms: "coolant",
       difficulty: "diy_easy",
     },
     {
@@ -268,7 +268,7 @@ export const CAUSE_PARTS: Record<string, PartLine[]> = {
   "stuck-closed thermostat, failed water pump, or cooling fan problem": [
     {
       label: "Thermostat (correct temperature rating) + gasket",
-      searchTerms: "engine thermostat",
+      searchTerms: "thermostat",
       difficulty: "diy_moderate",
     },
     {
@@ -373,7 +373,7 @@ export const CAUSE_PARTS: Record<string, PartLine[]> = {
   "exhaust leak before the upstream oxygen sensor": [
     {
       label: "Exhaust clamp / flange gasket (size as measured)",
-      searchTerms: "exhaust clamp gasket",
+      searchTerms: "exhaust clamp",
       difficulty: "diy_moderate",
     },
   ],
@@ -395,7 +395,7 @@ export const SYSTEM_PARTS: Partial<Record<string, PartLine[]>> = {
   cooling: [
     {
       label: "Coolant (the exact type the manufacturer specifies)",
-      searchTerms: "engine coolant",
+      searchTerms: "coolant",
       difficulty: "diy_easy",
     },
     {
@@ -450,7 +450,7 @@ export const SYSTEM_PARTS: Partial<Record<string, PartLine[]>> = {
   emissions: [
     {
       label: "Gas cap",
-      searchTerms: "gas cap fuel filler",
+      searchTerms: "gas cap",
       difficulty: "diy_easy",
     },
     {
@@ -462,7 +462,7 @@ export const SYSTEM_PARTS: Partial<Record<string, PartLine[]>> = {
   exhaust: [
     {
       label: "Exhaust clamp / flange gasket (size as measured)",
-      searchTerms: "exhaust clamp gasket",
+      searchTerms: "exhaust clamp",
       difficulty: "diy_moderate",
     },
   ],
@@ -474,7 +474,7 @@ export const SYSTEM_PARTS: Partial<Record<string, PartLine[]>> = {
     },
     {
       label: "Fuses (assorted automotive blade fuses)",
-      searchTerms: "automotive blade fuse assortment",
+      searchTerms: "automotive fuse assortment",
       difficulty: "diy_easy",
     },
   ],
