@@ -79,16 +79,22 @@ describe("store link builders", () => {
     );
   });
 
-  it("builds the verified AutoZone search URL", () => {
-    expect(autoZoneLink("front brake pads")).toBe(
-      "https://www.autozone.com/searchresult?searchText=front+brake+pads",
+  it("builds AutoZone/O'Reilly search URLs with the vehicle baked in (owner feedback: put the car in for them)", () => {
+    expect(autoZoneLink(vehicle, { searchTerms: "front brake pads" })).toBe(
+      "https://www.autozone.com/searchresult?searchText=2023+Audi+Q5+front+brake+pads",
+    );
+    expect(oreillyLink(vehicle, { searchTerms: "front brake pads" })).toBe(
+      "https://www.oreillyauto.com/search?q=2023+Audi+Q5+front+brake+pads",
     );
   });
 
-  it("builds the verified O'Reilly search URL", () => {
-    expect(oreillyLink("front brake pads")).toBe(
-      "https://www.oreillyauto.com/search?q=front+brake+pads",
-    );
+  it("falls back to part terms alone without a vehicle year", () => {
+    expect(
+      autoZoneLink(
+        { make: "Audi", model: "Q5", modelYear: null },
+        { searchTerms: "front brake pads" },
+      ),
+    ).toBe("https://www.autozone.com/searchresult?searchText=front+brake+pads");
   });
 
   it("buildStoreLinks returns all three stores with fulfillment labels", () => {

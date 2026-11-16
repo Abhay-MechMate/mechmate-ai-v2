@@ -65,12 +65,41 @@ export function rockAutoLink(
   return `https://www.rockauto.com/en/catalog/${rockAutoVehiclePath(vehicle)}`;
 }
 
-export function autoZoneLink(searchTerms: string): string {
-  return `https://www.autozone.com/searchresult?searchText=${encodeTerms(searchTerms, "+")}`;
+/**
+ * AutoZone and O'Reilly have no public way to pre-select a vehicle via URL
+ * (it lives in their own session), but their search boxes accept
+ * "{year} {make} {model} {part terms}" as free text, which effectively puts
+ * the car in for the owner (owner feedback 2026-11-16: links must carry the
+ * vehicle). Without a year, fall back to the part terms alone.
+ */
+function searchTermsWithVehicle(
+  vehicle: Pick<VehicleSnapshot, "make" | "model" | "modelYear">,
+  part: Pick<PartLine, "searchTerms">,
+): string {
+  const vehicleTerms = vehicle.modelYear
+    ? `${vehicle.modelYear} ${vehicle.make} ${vehicle.model}`
+    : null;
+  return [vehicleTerms, part.searchTerms].filter(Boolean).join(" ");
 }
 
-export function oreillyLink(searchTerms: string): string {
-  return `https://www.oreillyauto.com/search?q=${encodeTerms(searchTerms, "+")}`;
+export function autoZoneLink(
+  vehicle: Pick<VehicleSnapshot, "make" | "model" | "modelYear">,
+  part: Pick<PartLine, "searchTerms">,
+): string {
+  return `https://www.autozone.com/searchresult?searchText=${encodeTerms(
+    searchTermsWithVehicle(vehicle, part),
+    "+",
+  )}`;
+}
+
+export function oreillyLink(
+  vehicle: Pick<VehicleSnapshot, "make" | "model" | "modelYear">,
+  part: Pick<PartLine, "searchTerms">,
+): string {
+  return `https://www.oreillyauto.com/search?q=${encodeTerms(
+    searchTermsWithVehicle(vehicle, part),
+    "+",
+  )}`;
 }
 
 export function buildStoreLinks(
@@ -79,7 +108,7 @@ export function buildStoreLinks(
 ): StoreLink[] {
   return [
     { store: "rockauto", name: STORE_NAMES.rockauto, url: rockAutoLink(vehicle), fulfillment: FULFILLMENT.rockauto },
-    { store: "autozone", name: STORE_NAMES.autozone, url: autoZoneLink(part.searchTerms), fulfillment: FULFILLMENT.autozone },
-    { store: "oreilly", name: STORE_NAMES.oreilly, url: oreillyLink(part.searchTerms), fulfillment: FULFILLMENT.oreilly },
+    { store: "autozone", name: STORE_NAMES.autozone, url: autoZoneLink(vehicle, part), fulfillment: FULFILLMENT.autozone },
+    { store: "oreilly", name: STORE_NAMES.oreilly, url: oreillyLink(vehicle, part), fulfillment: FULFILLMENT.oreilly },
   ];
 }
