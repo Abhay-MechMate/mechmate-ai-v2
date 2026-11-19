@@ -30,8 +30,8 @@ export function PartsSection({ causes, vehicle }: PartsSectionProps) {
       <p className="mt-2 text-sm leading-relaxed text-fg-secondary">
         Search links open with the part name. Add your car once on a store&apos;s
         site and its results filter to fit — RockAuto already scopes to your
-        car. Pin a store to keep it first, and save your zip for pickup-store
-        locators.
+        car. Pin a store to keep it first, and enter your zip below to see the
+        closest stores to you.
       </p>
 
       <PartsZipBar />

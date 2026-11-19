@@ -2,10 +2,11 @@
 
 // Phase 4 client widgets for the parts section (owner decisions 2026-11-16):
 //   - PartsStoreChips: the per-part store chips, reordered so the pinned store
-//     comes first (owner picked "locator links + pinned favorite" instead of a
-//     true distance sort, which would need a store-location dataset).
-//   - PartsZipBar: enter a zip once; saved in this browser; shows "stores near
-//     {zip}" locator links for the pickup stores.
+//     comes first.
+//   - PartsZipBar: enter a zip once; saved in this browser; shows the closest
+//     stores per chain with crow-fly distances (owner decision 2026-11-19:
+//     real distances computed from bundled OpenStreetMap + Census data —
+//     the old store-locator links were useless empty search boxes).
 // Settings live in localStorage (per device); moving them to the profile is a
 // logged backlog item. State syncs from localStorage via useSyncExternalStore
 // (never setState-in-an-effect) so SSR renders the default order and the
@@ -14,15 +15,14 @@
 
 import {
   useCallback,
+  useEffect,
+  useState,
   useSyncExternalStore,
 } from "react";
 import type { VehicleSnapshot } from "@/lib/diagnosis/types";
-import {
-  buildStoreLinks,
-  PICKUP_STORES,
-  storeLocatorLink,
-  type StoreKey,
-} from "@/lib/parts/stores";
+import { buildStoreLinks, type StoreKey } from "@/lib/parts/stores";
+import { STORE_DISPLAY_NAMES } from "@/lib/parts/nearby";
+import { findNearbyStoresAction } from "@/app/parts/actions";
 
 const PIN_STORAGE_KEY = "mm-parts-pin";
 const ZIP_STORAGE_KEY = "mm-parts-zip";
@@ -119,48 +119,82 @@ export function PartsStoreChips({
   );
 }
 
-// --- zip + store locators ----------------------------------------------------
+// --- zip → nearest stores (owner decision 2026-11-19: real distance list) ----
 
-const STORE_LABELS: Record<StoreKey, string> = {
-  rockauto: "RockAuto",
-  autozone: "AutoZone",
-  oreilly: "O'Reilly",
-  advance: "Advance",
-};
+type NearbyStoresResult = Awaited<ReturnType<typeof findNearbyStoresAction>>;
+
+function mapsLink(store: { lat: number; lng: number }): string {
+  return `https://www.google.com/maps/search/?api=1&query=${store.lat},${store.lng}`;
+}
 
 export function PartsZipBar() {
   const savedZipRaw = useStoredSetting(ZIP_STORAGE_KEY);
   const savedZip = savedZipRaw ?? "";
   const valid = /^\d{5}$/.test(savedZip.trim());
 
+  const [state, setState] = useState<{
+    status: "idle" | "done";
+    result: NearbyStoresResult | null;
+  }>({ status: "idle", result: null });
+
+  // Loaded zip from a previous visit → compute the list automatically.
+  // No synchronous setState here (React hooks rule): state updates only after
+  // the action resolves.
+  useEffect(() => {
+    if (!valid || state.status !== "idle") return;
+    let cancelled = false;
+    findNearbyStoresAction(savedZip).then((result) => {
+      if (!cancelled) setState({ status: "done", result });
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [valid, state.status, savedZip]);
+
   if (valid) {
     return (
-      <p className="mt-3 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-fg-muted">
-        <span>
-          Stores near <span className="text-fg-secondary">{savedZip}</span>:
-        </span>
-        {PICKUP_STORES.map((store) => {
-          const url = storeLocatorLink(store, savedZip);
-          return url ? (
-            <a
-              key={store}
-              href={url}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="rounded-md border border-line bg-canvas px-2 py-0.5 text-fg-secondary transition-colors hover:border-line-strong hover:text-fg"
-            >
-              find {STORE_LABELS[store]}
-            </a>
-          ) : null;
-        })}
-        <button
-          type="button"
-          onClick={() => writeSetting(ZIP_STORAGE_KEY, null)}
-          className="underline underline-offset-2 transition-colors hover:text-fg"
-        >
-          change
-        </button>
-      </p>
+      <div className="mt-3">
+        <p className="flex flex-wrap items-center gap-x-2 text-xs text-fg-muted">
+          <span>
+            Closest stores to{" "}
+            <span className="text-fg-secondary">{savedZip}</span>
+          </span>
+          <span aria-hidden>·</span>
+          <span>crow-fly distances, from OpenStreetMap data</span>
+          <button
+            type="button"
+            onClick={() => writeSetting(ZIP_STORAGE_KEY, null)}
+            className="underline underline-offset-2 transition-colors hover:text-fg"
+          >
+            change
+          </button>
+        </p>
+        {state.status === "idle" ? (
+          <p className="mt-2 text-xs text-fg-muted">Finding stores…</p>
+        ) : null}
+        {state.status === "done" &&
+        state.result &&
+        !state.result.ok ? (
+          <p className="mt-2 text-xs text-fg-muted">{state.result.error}</p>
+        ) : null}
+        {state.status === "done" && state.result?.ok ? (
+          <ul className="mt-2 flex flex-wrap gap-2">
+            {state.result.stores.map((store) => (
+              <li key={`${store.store}:${store.lat},${store.lng}`}>
+                <a
+                  href={mapsLink(store)}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-baseline gap-1.5 rounded-md border border-line bg-canvas px-2.5 py-1 text-xs text-fg-secondary transition-colors hover:border-line-strong hover:text-fg"
+                >
+                  <span className="font-medium text-fg">{store.distanceMiles.toFixed(1)} mi</span>
+                  <span>{STORE_DISPLAY_NAMES[store.store]}</span>
+                </a>
+              </li>
+            ))}
+          </ul>
+        ) : null}
+      </div>
     );
   }
 
@@ -175,7 +209,7 @@ export function PartsZipBar() {
       className="mt-3 flex items-center gap-2"
     >
       <label htmlFor="parts-zip" className="text-xs text-fg-muted">
-        Your zip (find pickup stores near you):
+        Your zip (find the closest stores):
       </label>
       <input
         id="parts-zip"
@@ -190,7 +224,7 @@ export function PartsZipBar() {
         type="submit"
         className="rounded-md border border-line px-2 py-1 text-xs text-fg-secondary transition-colors hover:border-line-strong hover:text-fg"
       >
-        Save
+        Find stores
       </button>
     </form>
   );

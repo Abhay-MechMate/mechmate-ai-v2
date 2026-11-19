@@ -7,6 +7,8 @@ Nothing here is scheduled — that's the point. When a phase opens, we pull from
 - Bluetooth OBD-II dongle reading (ELM327 via browser Web Bluetooth) — roadmap Phase 5
 - Real-time parts availability via store APIs / affiliate programs — roadmap Phase 4 upgrade
 - Verified part numbers in the parts section (store interchange search, affiliate/part-catalog feeds, or owner-verified additions to `CAUSE_PARTS`) — Phase 4 follow-up; v1 ships named part lines only (docs/PARTS_DESIGN.md §1.2)
+- Refresh the store-location dataset (`node scripts/refresh-parts-data.mjs <raw-dir>`) when chain store counts drift — data is OpenStreetMap (ODbL), attribution is shown in the parts section
+- Move zip + pinned store from browser localStorage to the user profile (cross-device)
 - Parts section on the assistant conversation page, not just the report — Phase 4 follow-up
 - Per-user store preference (remember which store they like first) — Phase 4 follow-up
 - Affiliate/referral params appended in one place (`buildStoreLinks`) once there is traffic to monetize
